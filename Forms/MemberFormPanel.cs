@@ -8,6 +8,9 @@ namespace SYLOGOS.Forms
         public TextBox txtSpousePhone;
         public TextBox txtMemberPhone;
         public TextBox txtEmail;
+        public TextBox txtCertificateNumber;
+        public TextBox txtCertificatePublisher;
+        public TextBox txtNotes;
         public TextBox txtCity;
         public TextBox txtAddress;
         public TextBox txtRegistrationDate;
@@ -16,7 +19,8 @@ namespace SYLOGOS.Forms
         public MemberFormPanel()
         {
             Dock = DockStyle.Top;
-            Height = 260;
+            AutoSize = true;
+            AutoSizeMode = AutoSizeMode.GrowAndShrink;
             Padding = new Padding(10);
             InitializeForm();
         }
@@ -27,7 +31,7 @@ namespace SYLOGOS.Forms
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 4,
-                RowCount = 6,
+                RowCount = 8,
                 AutoSize = true
             };
             formLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 250));
@@ -85,8 +89,40 @@ namespace SYLOGOS.Forms
             txtAddress = new TextBox { Dock = DockStyle.Fill };
             formLayout.Controls.Add(txtAddress, 1, 4);
 
-            formLayout.Controls.Add(new Label(), 2, 4);
-            formLayout.Controls.Add(new Label(), 3, 4);
+            formLayout.Controls.Add(MakeLabel("Family Certificate:"), 2, 4);
+            txtCertificateNumber = new TextBox { Dock = DockStyle.Fill };
+            formLayout.Controls.Add(txtCertificateNumber, 3, 4);
+
+            formLayout.Controls.Add(new Label
+            {
+                Text = "Certificate Publisher:",
+                AutoSize = false,
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.TopRight
+            }, 0, 5);
+            txtCertificatePublisher = new TextBox { Dock = DockStyle.Fill };
+            formLayout.Controls.Add(txtCertificatePublisher, 1, 5);
+
+            formLayout.Controls.Add(new Label
+            {
+                Text = "Notes:",
+                AutoSize = false,
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.TopRight
+            }, 2, 5);
+
+            txtNotes = new TextBox
+            {
+                Multiline = true,
+                ScrollBars = ScrollBars.Vertical,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
+                Height = txtFullName.Font.Height * 4 + 12 // ≈ 4 lines
+            };
+
+            formLayout.Controls.Add(txtNotes, 3, 5);
+
+            //formLayout.Controls.Add(new Label(), 2, 4);
+            //formLayout.Controls.Add(new Label(), 3, 4);
 
             FlowLayoutPanel buttonPanel = new FlowLayoutPanel
             {
@@ -136,6 +172,22 @@ namespace SYLOGOS.Forms
                 return new Label { Width = width };
             }
 
+
+            for (int i = 0; i < formLayout.RowCount; i++)
+            {
+                formLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            }
+
+            formLayout.RowStyles.Clear();
+            formLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // 0
+            formLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // 1
+            formLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // 2
+            formLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // 3
+            formLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // 4
+            formLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // 5 — Certificate + Notes
+            formLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // 6 — buttons
+
+
             buttonPanel.Controls.Add(btnNew);
             buttonPanel.Controls.Add(BoxSpacer(10));
             buttonPanel.Controls.Add(btnSave);
@@ -144,7 +196,7 @@ namespace SYLOGOS.Forms
             buttonPanel.Controls.Add(BoxSpacer(10));
             buttonPanel.Controls.Add(btnDelete);
 
-            formLayout.Controls.Add(buttonPanel, 1, 5);
+            formLayout.Controls.Add(buttonPanel, 1, 6);
             formLayout.SetColumnSpan(buttonPanel, 3);
 
             Controls.Add(formLayout);

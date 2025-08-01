@@ -11,6 +11,13 @@
         public string? MemberPhone { get; set; }
         public string? SpousePhone { get; set; }
         public string? Email { get; set; }
+
+        public string? CertificateNumber { get; set; }
+
+        public string? CertificatePublisher { get; set; }
+
+        public string? Notes { get; set; }
+
         public DateTime? RegistrationDate { get; set; }
 
         public List<Child> Children { get; set; } = new();

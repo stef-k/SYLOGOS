@@ -190,6 +190,9 @@ namespace SYLOGOS.Forms
             row.Controls.Add(membershipWrapper, 1, 0);
 
             Controls.Add(row);
+
+            childGrid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(240, 240, 240);
+            membershipGrid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(240, 240, 240);
         }
     }
 }

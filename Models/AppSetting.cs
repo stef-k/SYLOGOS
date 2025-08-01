@@ -13,6 +13,12 @@
         public string? ClubName { get; set; }
         public string? Phone { get; set; }
 
+        public string? Email { get; set; }
+
+        public string? Website { get; set; }
+
+        public string? Address { get; set; }
+
         // Binary column to store image
         public byte[]? ClubLogo { get; set; }
 

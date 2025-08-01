@@ -13,8 +13,8 @@ namespace SYLOGOS.Forms
         private Panel filterPanel;
         private TextBox searchBox;
         private MemberFormPanel memberFormPanel;
-        private ChildMembershipPanel childMembershipPanel;
-        private DataGridView memberGrid;
+        public ChildMembershipPanel childMembershipPanel;
+        public DataGridView memberGrid;
         private ComboBox filterMode;
         private System.Windows.Forms.Timer searchDebounceTimer;
         private string lastSearchText = "";
@@ -35,6 +35,7 @@ namespace SYLOGOS.Forms
         public MembersView()
         {
             InitializeComponent();
+            WireValidationEvents();
             memberGrid.DataSource = _memberSource;
             memberGrid.DataBindingComplete += MemberGrid_DataBindingComplete;
             memberGrid.SelectionChanged += MemberGrid_SelectionChanged;
@@ -49,6 +50,28 @@ namespace SYLOGOS.Forms
             }
         }
 
+        private void WireValidationEvents()
+        {
+            foreach (TextBox? tb in new[]
+            {
+                memberFormPanel.txtFullName,
+                memberFormPanel.txtSpouseFullName,
+                memberFormPanel.txtMemberPhone,
+                memberFormPanel.txtSpousePhone,
+                memberFormPanel.txtEmail,
+                memberFormPanel.txtCity,
+                memberFormPanel.txtAddress,
+                memberFormPanel.txtCertificateNumber,
+                memberFormPanel.txtCertificatePublisher,
+                memberFormPanel.txtNotes
+            })
+            {
+                tb.TextChanged += (_, _) => UpdateSaveButtonState();
+            }
+        }
+
+
+
         /// <summary>
         /// Enables Save only when the Full Name is non-empty.
         /// </summary>
@@ -57,6 +80,59 @@ namespace SYLOGOS.Forms
             bool canSave = !string.IsNullOrWhiteSpace(memberFormPanel.txtFullName.Text);
             memberFormPanel.btnSave.Enabled = canSave;
         }
+
+        public void ApplyGridStyles(DataGridView grid)
+        {
+            using AppDbContext db = new();
+            bool dark = db.Settings.FirstOrDefault()?.UseDarkMode ?? false;
+
+            if (dark)
+            {
+                grid.BackgroundColor = Color.FromArgb(45, 45, 48);
+                grid.DefaultCellStyle.BackColor = Color.FromArgb(45, 45, 48);
+                grid.DefaultCellStyle.ForeColor = Color.White;
+
+                grid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(30, 30, 30);
+                grid.AlternatingRowsDefaultCellStyle.ForeColor = Color.White;
+
+                grid.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(62, 62, 66);
+                grid.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            }
+            else
+            {
+                grid.BackgroundColor = Color.White;
+                grid.DefaultCellStyle.BackColor = Color.White;
+                grid.DefaultCellStyle.ForeColor = Color.Black;
+
+                grid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(240, 240, 240);
+                grid.AlternatingRowsDefaultCellStyle.ForeColor = Color.Black;
+
+                grid.ColumnHeadersDefaultCellStyle.BackColor = Color.WhiteSmoke;
+                grid.ColumnHeadersDefaultCellStyle.ForeColor = Color.Black;
+            }
+
+            grid.DefaultCellStyle.SelectionBackColor = Color.DarkSlateBlue;
+            grid.DefaultCellStyle.SelectionForeColor = Color.White;
+            grid.EnableHeadersVisualStyles = false;
+        }
+
+        private void ApplyHighlightingToGrid(DataGridView grid, string highlight, Func<object?, bool> isMatch)
+        {
+            using AppDbContext db = new();
+            bool dark = db.Settings.FirstOrDefault()?.UseDarkMode ?? false;
+
+            foreach (DataGridViewRow row in grid.Rows)
+            {
+                bool match = isMatch(row.DataBoundItem);
+
+                row.DefaultCellStyle.BackColor = match
+                    ? (dark ? Color.FromArgb(90, 90, 0) : Color.LightGoldenrodYellow)
+                    : (row.Index % 2 == 0
+                        ? (dark ? Color.FromArgb(45, 45, 48) : Color.White)
+                        : (dark ? Color.FromArgb(30, 30, 30) : Color.FromArgb(240, 240, 240)));
+            }
+        }
+
 
         private void InitializeSearchPanel()
         {
@@ -103,8 +179,8 @@ namespace SYLOGOS.Forms
             };
             filterMode.Items.AddRange(new object[]
             {
-                "All", "Full Name", "Member Phone", "Spouse Name", "Spouse Phone", "Email", "City",
-                "Registration Year", "Registration Month", "Child Name", "Membership Year"
+                "Member Number", "Full Name", "Member Phone", "Spouse Name", "Spouse Phone", "Email", "City",
+                "Registration Year", "Registration Month", "Child Name", "Membership Year",  "Certificate Number"
             });
             filterMode.SelectedIndex = 0;
 
@@ -244,6 +320,7 @@ namespace SYLOGOS.Forms
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill
             };
+            ApplyGridStyles(memberGrid);
             DataGridViewTextBoxColumn memberNumberCol = new DataGridViewTextBoxColumn
             {
                 HeaderText = "Member #",
@@ -264,10 +341,47 @@ namespace SYLOGOS.Forms
                 DataPropertyName = "SpousePhone"
             });
 
-            memberGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Email", DataPropertyName = "Email" });
+            DataGridViewTextBoxColumn emailCol = new()
+            {
+                HeaderText = "Email",
+                DataPropertyName = "Email",
+                AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
+                CellTemplate = new CustomLinkCell()
+            };
+            memberGrid.Columns.Add(emailCol);
+
             memberGrid.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             memberGrid.ColumnHeadersDefaultCellStyle.Font = new Font(memberGrid.Font, FontStyle.Bold);
             memberGrid.SelectionChanged += MemberGrid_SelectionChanged;
+            memberGrid.CellFormatting += MemberGrid_CellFormatting;
+            memberGrid.CellContentClick += MemberGrid_CellContentClick;
+
+            memberGrid.CellMouseEnter += (s, e) =>
+            {
+                if (e.RowIndex >= 0 && e.ColumnIndex >= 0 &&
+                    memberGrid.Columns[e.ColumnIndex].HeaderText == "Email")
+                {
+                    object? val = memberGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
+                    string? email = val?.ToString();
+                    memberGrid.Cursor = string.IsNullOrWhiteSpace(email) ? Cursors.Default : Cursors.Hand;
+                }
+            };
+
+            memberGrid.CellMouseLeave += (s, e) =>
+            {
+                memberGrid.Cursor = Cursors.Default;
+            };
+
+            memberGrid.CellToolTipTextNeeded += (s, e) =>
+            {
+                if (e.RowIndex >= 0 && e.ColumnIndex >= 0 &&
+                    memberGrid.Columns[e.ColumnIndex].HeaderText == "Email")
+                {
+                    string? val = memberGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value?.ToString();
+                    e.ToolTipText = string.IsNullOrWhiteSpace(val) ? "" : $"Αποστολή Email στον λογαριασμό: {val}";
+                }
+            };
+
 
             gridTitle = new Label
             {
@@ -319,18 +433,82 @@ namespace SYLOGOS.Forms
                     UpdateDetailCounts();
                 }
             };
+            ApplyGridStyles(childMembershipPanel.childGrid);
+            ApplyGridStyles(childMembershipPanel.membershipGrid);
 
-            Controls.Add(memberGrid);
-            Controls.Add(gridTitle);
-            Controls.Add(childMembershipPanel);
-            Controls.Add(memberFormPanel);
-            Controls.Add(filterPanel);
+            Panel scrollContainer = new Panel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                Padding = new Padding(10)
+            };
+
+            scrollContainer.Controls.Add(memberGrid);
+            scrollContainer.Controls.Add(gridTitle);
+            scrollContainer.Controls.Add(childMembershipPanel);
+            scrollContainer.Controls.Add(memberFormPanel);
+            scrollContainer.Controls.Add(filterPanel);
+
+            // Add scrollable panel to main view
+            Controls.Add(scrollContainer);
+
+
             // ensure Save is disabled at startup
             UpdateSaveButtonState();
             // Hook all TextBoxes to uppercase (skipping email)
             EnforceUppercase(this);
 
             InitializeContextMenus();
+        }
+
+        private void MemberGrid_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (memberGrid.Columns[e.ColumnIndex] is DataGridViewLinkColumn)
+            {
+                bool dark = db.Settings.FirstOrDefault()?.UseDarkMode ?? false;
+                bool isSelected = memberGrid.Rows[e.RowIndex].Selected;
+
+                if (isSelected)
+                {
+                    // Selection color: white (works on both themes)
+                    e.CellStyle.ForeColor = Color.White;
+                }
+                else if (dark)
+                {
+                    // For dark theme: bright readable blue regardless of row parity
+                    e.CellStyle.ForeColor = Color.DeepSkyBlue;
+                }
+                else
+                {
+                    // Light theme: default link blue
+                    e.CellStyle.ForeColor = Color.Blue;
+                }
+                e.CellStyle.SelectionForeColor = Color.White;
+            }
+        }
+
+
+        private void MemberGrid_CellContentClick(object? sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0 && memberGrid.Columns[e.ColumnIndex].HeaderText == "Email")
+            {
+                string? email = memberGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value?.ToString();
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    try
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = $"mailto:{email}",
+                            UseShellExecute = true
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Could not open email client:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
         }
 
         private void MemberGrid_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
@@ -422,17 +600,20 @@ namespace SYLOGOS.Forms
                                 query = query.Where(m => m.Memberships.Any(ms => ms.Year == y));
                             }
                             break;
-                        default: // "All"
-                            query = query.Where(m =>
-                                m.FullName.ToUpper().Contains(f) ||
-                                (m.SpouseFullName ?? "").ToUpper().Contains(f) ||
-                                (m.MemberPhone ?? "").Contains(filter) ||
-                                (m.SpousePhone ?? "").Contains(filter) ||
-                                (m.Email ?? "").ToUpper().Contains(f) ||
-                                (m.City ?? "").ToUpper().Contains(f) ||
-                                m.Children.Any(c => c.FullName.ToUpper().Contains(f)) ||
-                                m.Memberships.Any(ms => ms.Year.ToString() == filter));
+                        case "Certificate Number":
+                            query = query.Where(m => (m.CertificateNumber ?? "").ToUpper().Contains(f));
                             break;
+                        default: // "MemberNumber" exact  match only
+                            if (int.TryParse(filter, out int exactNumber))
+                            {
+                                query = query.Where(m => m.MemberNumber == exactNumber);
+                            }
+                            else
+                            {
+                                query = query.Where(m => false); // no match if not a number
+                            }
+                            break;
+
                     }
                 }
 
@@ -477,28 +658,39 @@ namespace SYLOGOS.Forms
                     memberGrid.FirstDisplayedScrollingRowIndex = 0;
                 }
 
-                // Highlight rows based on search criteria
-                foreach (DataGridViewRow row in memberGrid.Rows)
+                using (AppDbContext db = new AppDbContext())
                 {
-                    if (row.DataBoundItem is Member m && !string.IsNullOrWhiteSpace(highlight))
-                    {
-                        bool match = modeKey switch
-                        {
-                            "Full Name" => m.FullName.ToUpper().Contains(highlight),
-                            "Spouse Name" => (m.SpouseFullName ?? "").ToUpper().Contains(highlight),
-                            "Phone" => (m.MemberPhone ?? "").Contains(filter) || (m.SpousePhone ?? "").Contains(filter),
-                            "Email" => (m.Email ?? "").ToUpper().Contains(highlight),
-                            "City" => (m.City ?? "").ToUpper().Contains(highlight),
-                            _ => false
-                        };
+                    bool dark = db.Settings.FirstOrDefault()?.UseDarkMode ?? false;
 
-                        row.DefaultCellStyle.BackColor = match ? Color.LightGoldenrodYellow : Color.White;
-                    }
-                    else
+                    foreach (DataGridViewRow row in memberGrid.Rows)
                     {
-                        row.DefaultCellStyle.BackColor = Color.White;
+                        if (row.DataBoundItem is Member m && !string.IsNullOrWhiteSpace(highlight))
+                        {
+                            bool match = modeKey switch
+                            {
+                                "Full Name" => m.FullName.ToUpper().Contains(highlight),
+                                "Spouse Name" => (m.SpouseFullName ?? "").ToUpper().Contains(highlight),
+                                "Phone" => (m.MemberPhone ?? "").Contains(filter) || (m.SpousePhone ?? "").Contains(filter),
+                                "Email" => (m.Email ?? "").ToUpper().Contains(highlight),
+                                "City" => (m.City ?? "").ToUpper().Contains(highlight),
+                                _ => false
+                            };
+
+                            row.DefaultCellStyle.BackColor = match
+                                ? (dark ? Color.FromArgb(90, 90, 0) : Color.LightGoldenrodYellow)
+                                : (row.Index % 2 == 0
+                                    ? (dark ? Color.FromArgb(45, 45, 48) : Color.White)
+                                    : (dark ? Color.FromArgb(30, 30, 30) : Color.FromArgb(240, 240, 240)));
+                        }
+                        else
+                        {
+                            row.DefaultCellStyle.BackColor = (row.Index % 2 == 0
+                                ? (dark ? Color.FromArgb(45, 45, 48) : Color.White)
+                                : (dark ? Color.FromArgb(30, 30, 30) : Color.FromArgb(240, 240, 240)));
+                        }
                     }
                 }
+
 
                 // 4) Defer selection clearing only if no pending selection
                 if (!pendingSelectionMemberNumber.HasValue)
@@ -544,6 +736,9 @@ namespace SYLOGOS.Forms
             memberFormPanel.txtEmail.Text = "";
             memberFormPanel.txtCity.Text = "";
             memberFormPanel.txtAddress.Text = "";
+            memberFormPanel.txtCertificateNumber.Text = "";
+            memberFormPanel.txtCertificatePublisher.Text = "";
+            memberFormPanel.txtNotes.Text = "";
 
             children = new BindingList<Child>();
             memberships = new BindingList<Membership>();
@@ -588,6 +783,19 @@ namespace SYLOGOS.Forms
             childMembershipPanel.childGrid.DataSource = children;
             childMembershipPanel.membershipGrid.DataSource = memberships;
             UpdateDetailCounts();
+
+            string highlight = searchBox.Text.Trim().ToUpperInvariant();
+
+            ApplyHighlightingToGrid(childMembershipPanel.childGrid, highlight, row =>
+            {
+                return row is Child c && !string.IsNullOrWhiteSpace(highlight) && c.FullName.ToUpper().Contains(highlight);
+            });
+
+            ApplyHighlightingToGrid(childMembershipPanel.membershipGrid, highlight, row =>
+            {
+                return row is Membership ms && int.TryParse(highlight, out int y) && ms.Year == y;
+            });
+
         }
 
 
@@ -604,6 +812,10 @@ namespace SYLOGOS.Forms
             memberFormPanel.txtEmail.Text = "";
             memberFormPanel.txtCity.Text = "";
             memberFormPanel.txtAddress.Text = "";
+            memberFormPanel.txtCertificateNumber.Text = "";
+            memberFormPanel.txtCertificatePublisher.Text = "";
+            memberFormPanel.txtNotes.Text = "";
+
 
             children = new SortableBindingList<Child>();
             memberships = new SortableBindingList<Membership>();
@@ -781,6 +993,9 @@ namespace SYLOGOS.Forms
                 member.Email = memberFormPanel.txtEmail.Text.Trim();
                 member.City = memberFormPanel.txtCity.Text.Trim();
                 member.Address = memberFormPanel.txtAddress.Text.Trim();
+                member.CertificateNumber = memberFormPanel.txtCertificateNumber.Text.Trim();
+                member.CertificatePublisher = memberFormPanel.txtCertificatePublisher.Text.Trim();
+                member.Notes = memberFormPanel.txtNotes.Text.Trim();
 
                 if (currentMember == null)
                 {
@@ -939,6 +1154,45 @@ namespace SYLOGOS.Forms
             // TODO: Export payment receipt PDF
         }
 
+
+        /// <summary>
+        /// Helper method to load a member by their MemberNumber. From query results dialog.
+        /// </summary>
+        /// <param name="memberNumber"></param>
+        public void LoadMemberByNumber(int memberNumber)
+        {
+            for (int i = 0; i < memberGrid.Rows.Count; i++)
+            {
+                if (memberGrid.Rows[i].DataBoundItem is Member m && m.MemberNumber == memberNumber)
+                {
+                    memberGrid.ClearSelection();
+                    memberGrid.Rows[i].Selected = true;
+                    memberGrid.CurrentCell = memberGrid.Rows[i].Cells[0];
+                    memberGrid.FirstDisplayedScrollingRowIndex = i;
+
+                    // ✅ force selection logic
+                    MemberGrid_SelectionChanged(memberGrid, EventArgs.Empty);
+                    return;
+                }
+            }
+
+            LoadMembers();
+
+            for (int i = 0; i < memberGrid.Rows.Count; i++)
+            {
+                if (memberGrid.Rows[i].DataBoundItem is Member m && m.MemberNumber == memberNumber)
+                {
+                    memberGrid.ClearSelection();
+                    memberGrid.Rows[i].Selected = true;
+                    memberGrid.CurrentCell = memberGrid.Rows[i].Cells[0];
+                    memberGrid.FirstDisplayedScrollingRowIndex = i;
+
+                    // ✅ force selection logic
+                    MemberGrid_SelectionChanged(memberGrid, EventArgs.Empty);
+                    return;
+                }
+            }
+        }
 
     }
 }
