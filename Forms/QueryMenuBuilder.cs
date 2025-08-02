@@ -1,34 +1,41 @@
-﻿using SYLOGOS.Models;
+﻿using SYLOGOS.Forms;
+using SYLOGOS.Models;
 using SYLOGOS.Util;
 
-namespace SYLOGOS.Forms
+namespace SYLOGOS
 {
     public static class QueryMenuBuilder
     {
         public static ToolStripMenuItem Build(MainForm mainForm)
         {
-            ToolStripMenuItem queriesMenu = new ToolStripMenuItem("Queries");
+            ToolStripMenuItem queriesMenu = new("Queries");
+            AddQueryMenuItems(mainForm, queriesMenu);
+            return queriesMenu;
+        }
 
-            // --- Membership Queries ---
+
+        public static void AddQueryMenuItems(MainForm mainForm, ToolStripMenuItem queriesMenu)
+        {
             queriesMenu.DropDownItems.Add(BuildQueryItem("Unpaid Members", () =>
             {
                 using AppDbContext db = new();
-                List<Member> results = Queries.GetUnpaidMembers(db, DateTime.Now.Year);
-                QueryResultDialog.Show(mainForm, results, $"Unpaid Members ({DateTime.Now.Year})");
+                int year = DateTime.Now.Year;
+                List<Member> results = Queries.GetUnpaidMembers(db, year);
+                QueryResultDialog.Show(mainForm, results, "UnpaidMembers", null, year);
             }));
 
             queriesMenu.DropDownItems.Add(BuildQueryItem("Fully Paid Members", () =>
             {
                 using AppDbContext db = new();
                 List<Member> results = Queries.GetFullyPaidMembers(db);
-                QueryResultDialog.Show(mainForm, results, "Fully Paid Members");
+                QueryResultDialog.Show(mainForm, results, "FullyPaidMembers");
             }));
 
             queriesMenu.DropDownItems.Add(BuildQueryItem("Partially Paid Members", () =>
             {
                 using AppDbContext db = new();
                 List<Member> results = Queries.GetPartiallyPaidMembers(db);
-                QueryResultDialog.Show(mainForm, results, "Partially Paid Members");
+                QueryResultDialog.Show(mainForm, results, "PartiallyPaidMembers");
             }));
 
             queriesMenu.DropDownItems.Add(BuildQueryItem("Memberships by Year...", () =>
@@ -40,24 +47,10 @@ namespace SYLOGOS.Forms
                     using AppDbContext db = new();
                     List<MembershipDisplay> results = Queries.GetMembershipsByYear(db, year);
                     decimal total = results.Sum(r => r.Amount);
-                    QueryResultDialog.Show(mainForm, results, $"Memberships ({year})", $"Total: {total:C2}");
+                    QueryResultDialog.Show(mainForm, results, "MembershipsByYear", $"Total: {total:C2}", year);
                 }
             }));
 
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Total Payments by Year...", () =>
-            {
-                Dictionary<string, object?>? input = InputPromptDialog.Show("Enter Year", new[] { "Year" }, new[] { InputType.Numeric });
-                if (input != null && input["Year"] is decimal y)
-                {
-                    using AppDbContext db = new();
-                    decimal total = Queries.GetTotalPaymentsByYear(db, (int)y);
-                    MessageBox.Show($"Total payments in {(int)y}: {total:C2}");
-                }
-            }));
-
-            queriesMenu.DropDownItems.Add(new ToolStripSeparator());
-
-            // --- Member Queries ---
             queriesMenu.DropDownItems.Add(BuildQueryItem("Recently Registered (months)...", () =>
             {
                 Dictionary<string, object?>? input = InputPromptDialog.Show("Months", new[] { "Months" }, new[] { InputType.Numeric });
@@ -65,7 +58,7 @@ namespace SYLOGOS.Forms
                 {
                     using AppDbContext db = new();
                     List<Member> results = Queries.GetRecentlyRegisteredMembers(db, (int)m);
-                    QueryResultDialog.Show(mainForm, results, $"Registered Last {(int)m} Months");
+                    QueryResultDialog.Show(mainForm, results, "RecentlyRegisteredMembers", null, (int)m);
                 }
             }));
 
@@ -76,7 +69,7 @@ namespace SYLOGOS.Forms
                 {
                     using AppDbContext db = new();
                     List<Member> results = Queries.GetMembersByCity(db, c);
-                    QueryResultDialog.Show(mainForm, results, $"City: {c}");
+                    QueryResultDialog.Show(mainForm, results, "MembersByCity", null, c);
                 }
             }));
 
@@ -84,21 +77,21 @@ namespace SYLOGOS.Forms
             {
                 using AppDbContext db = new();
                 List<Member> results = Queries.GetMembersMissingEmailOrPhone(db);
-                QueryResultDialog.Show(mainForm, results, "Missing Contact Info");
+                QueryResultDialog.Show(mainForm, results, "MembersMissingEmailOrPhone");
             }));
 
             queriesMenu.DropDownItems.Add(BuildQueryItem("Members With Certificate", () =>
             {
                 using AppDbContext db = new();
                 List<Member> results = Queries.GetMembersWithCertificate(db);
-                QueryResultDialog.Show(mainForm, results, "With Certificate");
+                QueryResultDialog.Show(mainForm, results, "MembersWithCertificate");
             }));
 
             queriesMenu.DropDownItems.Add(BuildQueryItem("Members Without Certificate", () =>
             {
                 using AppDbContext db = new();
                 List<Member> results = Queries.GetMembersWithoutCertificate(db);
-                QueryResultDialog.Show(mainForm, results, "Without Certificate");
+                QueryResultDialog.Show(mainForm, results, "MembersWithoutCertificate");
             }));
 
             queriesMenu.DropDownItems.Add(BuildQueryItem("Members Registered in Year...", () =>
@@ -108,13 +101,10 @@ namespace SYLOGOS.Forms
                 {
                     using AppDbContext db = new();
                     List<Member> results = Queries.GetMembersRegisteredInYear(db, (int)y);
-                    QueryResultDialog.Show(mainForm, results, $"Registered in {(int)y}");
+                    QueryResultDialog.Show(mainForm, results, "MembersRegisteredInYear", null, (int)y);
                 }
             }));
 
-            queriesMenu.DropDownItems.Add(new ToolStripSeparator());
-
-            // --- Children Queries ---
             queriesMenu.DropDownItems.Add(BuildQueryItem("Children with Birthday on...", () =>
             {
                 Dictionary<string, object?>? input = InputPromptDialog.Show("Birthday Date", new[] { "Date" }, new[] { InputType.Date });
@@ -122,7 +112,7 @@ namespace SYLOGOS.Forms
                 {
                     using AppDbContext db = new();
                     List<ChildBirthdayDisplay> results = Queries.GetChildrenWithBirthday(db, d);
-                    QueryResultDialog.Show(mainForm, results, $"Children Born on {d:MMMM d}");
+                    QueryResultDialog.Show(mainForm, results, "ChildrenWithBirthday", null, d);
                 }
             }));
 
@@ -133,7 +123,7 @@ namespace SYLOGOS.Forms
                 {
                     using AppDbContext db = new();
                     List<ChildAgedDisplay> results = Queries.GetChildrenAgedBetween(db, (int)min, (int)max);
-                    QueryResultDialog.Show(mainForm, results, $"Children Aged {(int)min}–{(int)max}");
+                    QueryResultDialog.Show(mainForm, results, "ChildrenAgedBetween", null, (int)min, (int)max);
                 }
             }));
 
@@ -141,12 +131,9 @@ namespace SYLOGOS.Forms
             {
                 using AppDbContext db = new();
                 List<ChildrenSummaryDisplay> results = Queries.GetChildrenPerMemberSummary(db);
-                QueryResultDialog.Show(mainForm, results, "Children per Member");
+                QueryResultDialog.Show(mainForm, results, "ChildrenPerMemberSummary");
             }));
 
-            queriesMenu.DropDownItems.Add(new ToolStripSeparator());
-
-            // --- Random Pick Queries ---
             queriesMenu.DropDownItems.Add(BuildQueryItem("Randomly Pick N Members...", () =>
             {
                 Dictionary<string, object?>? input = InputPromptDialog.Show(
@@ -161,7 +148,7 @@ namespace SYLOGOS.Forms
                 {
                     using AppDbContext db = new();
                     List<Member> results = Queries.PickRandomMembers(db, (int)n, excludeUnpaid);
-                    QueryResultDialog.Show(mainForm, results, title);
+                    QueryResultDialog.Show(mainForm, results, "PickRandomMembers", null, (int)n);
                 }
             }));
 
@@ -180,17 +167,15 @@ namespace SYLOGOS.Forms
                 {
                     using AppDbContext db = new();
                     List<Member> results = Queries.PickRandomMembersByCity(db, city, (int)n, excludeUnpaid);
-                    QueryResultDialog.Show(mainForm, results, title);
+                    QueryResultDialog.Show(mainForm, results, "PickRandomMembersByCity", null, (int)n, city);
                 }
             }));
-
-            return queriesMenu;
         }
 
-        private static ToolStripMenuItem BuildQueryItem(string label, Action onClick)
+        private static ToolStripMenuItem BuildQueryItem(string label, Action action)
         {
             ToolStripMenuItem item = new(label);
-            item.Click += (_, _) => onClick();
+            item.Click += (_, _) => action();
             return item;
         }
     }

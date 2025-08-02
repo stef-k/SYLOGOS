@@ -8,23 +8,27 @@ namespace SYLOGOS.Forms
         private readonly MainForm _mainForm;
         private readonly Type _dataType;
         private readonly DataGridView _grid;
-        private readonly Button _btnExportPdf;
         private readonly Button _btnExportExcel;
         private readonly Button _btnLoadSelected;
+        private readonly string _queryKey;
+        private readonly object[] _queryArgs;
 
-        private QueryResultDialog(MainForm mainForm, object dataSource, Type type, string title, string? summaryText = null)
+        private QueryResultDialog(MainForm mainForm, object dataSource, Type type, string queryKey, string? summaryText, params object[] args)
         {
+            _queryKey = queryKey;
+            _queryArgs = args;
             _mainForm = mainForm;
             _dataType = type;
 
-            Text = title;
+            string localizedTitle = FieldHeaderMapper.GetQueryTitle(_queryKey, args);
+            Text = localizedTitle;
             Width = (int)(Screen.PrimaryScreen.WorkingArea.Width * 0.9);
             Height = (int)(Screen.PrimaryScreen.WorkingArea.Height * 0.85);
             StartPosition = FormStartPosition.CenterParent;
 
             Label header = new Label
             {
-                Text = title,
+                Text = localizedTitle,
                 Dock = DockStyle.Top,
                 Font = new Font("Segoe UI", 11, FontStyle.Bold),
                 Height = 32,
@@ -68,6 +72,18 @@ namespace SYLOGOS.Forms
                 AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells
             };
 
+            _grid.DataBindingComplete += (_, _) =>
+            {
+                foreach (DataGridViewColumn col in _grid.Columns)
+                {
+                    string propName = col.DataPropertyName;
+                    if (!string.IsNullOrWhiteSpace(propName))
+                    {
+                        col.HeaderText = FieldHeaderMapper.GetHeader(propName, _dataType);
+                    }
+                }
+            };
+
             _grid.RowPostPaint += (s, e) =>
             {
                 DataGridView grid = (DataGridView)s!;
@@ -79,7 +95,6 @@ namespace SYLOGOS.Forms
 
             _grid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(230, 240, 255);
             _grid.DefaultCellStyle.SelectionForeColor = Color.Black;
-
             _grid.CellDoubleClick += (_, _) => TryLoadSelected();
 
             Label rowCountLabel = new()
@@ -93,12 +108,9 @@ namespace SYLOGOS.Forms
                 ForeColor = Color.DimGray
             };
 
-
-            _btnExportPdf = new Button { Text = "Export to PDF", Dock = DockStyle.Left, Width = 120 };
             _btnExportExcel = new Button { Text = "Export to Excel", Dock = DockStyle.Left, Width = 120 };
             _btnLoadSelected = new Button { Text = "Load Selected", Dock = DockStyle.Right, Width = 140 };
 
-            _btnExportPdf.Click += (_, _) => ExportToPdf();
             _btnExportExcel.Click += (_, _) => ExportToExcel();
             _btnLoadSelected.Click += (_, _) => TryLoadSelected();
 
@@ -110,14 +122,12 @@ namespace SYLOGOS.Forms
                 Height = 40
             };
 
-            buttonPanel.Controls.Add(_btnExportPdf);
             buttonPanel.Controls.Add(_btnExportExcel);
             buttonPanel.Controls.Add(_btnLoadSelected);
 
             Button btnCopy = new() { Text = "Copy", Dock = DockStyle.Left, Width = 100 };
             btnCopy.Click += (_, _) => CopySelectedRowToClipboard();
             buttonPanel.Controls.Add(btnCopy);
-
 
             Controls.Add(_grid);
             Controls.Add(buttonPanel);
@@ -129,14 +139,40 @@ namespace SYLOGOS.Forms
 
             Controls.Add(header);
         }
-        private static bool HasMemberNumberProperty(object dataSource)
-        {
-            Type? listType = dataSource.GetType();
-            Type? itemType = listType.IsGenericType
-                ? listType.GetGenericArguments()[0]
-                : listType.GetElementType();
 
-            return itemType?.GetProperty("MemberNumber") != null;
+        private void ExportToExcel()
+        {
+            try
+            {
+                if (_grid.DataSource is System.Collections.IEnumerable rawList)
+                {
+                    List<object> items = rawList.Cast<object>().ToList();
+                    if (items.Count == 0)
+                    {
+                        MessageBox.Show("No data to export.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    Dictionary<string, Func<object, object?>> columns = new();
+                    foreach (DataGridViewColumn col in _grid.Columns)
+                    {
+                        string propName = col.DataPropertyName;
+                        string header = FieldHeaderMapper.GetHeader(propName, _dataType);
+                        columns[header] = item =>
+                        {
+                            System.Reflection.PropertyInfo? prop = item.GetType().GetProperty(propName);
+                            return prop?.GetValue(item);
+                        };
+                    }
+
+                    string fileTitle = FieldHeaderMapper.GetQueryTitle(_queryKey, _queryArgs);
+                    ExportHelper.ExportExcelWithNotice(items, fileTitle, columns);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Export failed:\n" + ex.Message, "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void CopySelectedRowToClipboard()
@@ -151,8 +187,7 @@ namespace SYLOGOS.Forms
                 .Select(c => _grid.CurrentRow.Cells[c.Index].Value?.ToString() ?? "")
                 .ToArray();
 
-            string line = string.Join("\t", values);
-            Clipboard.SetText(line);
+            Clipboard.SetText(string.Join("\t", values));
         }
 
         private void TryLoadSelected()
@@ -169,7 +204,7 @@ namespace SYLOGOS.Forms
             if (selectedItem != null)
             {
                 System.Reflection.PropertyInfo? prop = selectedItem.GetType().GetProperty("MemberNumber");
-                if (prop != null && prop.GetValue(selectedItem) is int number)
+                if (prop?.GetValue(selectedItem) is int number)
                 {
                     _mainForm.ShowMembersView();
                     _mainForm.membersView.LoadMemberByNumber(number);
@@ -181,17 +216,17 @@ namespace SYLOGOS.Forms
             MessageBox.Show("This result cannot be loaded into the Members view.", "Unsupported", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
-        private void ExportToPdf()
+        private static bool HasMemberNumberProperty(object dataSource)
         {
-            MessageBox.Show("TODO: Export to PDF");
+            Type? listType = dataSource.GetType();
+            Type? itemType = listType.IsGenericType
+                ? listType.GetGenericArguments()[0]
+                : listType.GetElementType();
+
+            return itemType?.GetProperty("MemberNumber") != null;
         }
 
-        private void ExportToExcel()
-        {
-            MessageBox.Show("TODO: Export to Excel");
-        }
-
-        public static void Show<T>(MainForm mainForm, List<T> results, string title, string? summary = null)
+        public static void Show<T>(MainForm mainForm, List<T> results, string queryKey, string? summary = null, params object[] args)
         {
             if (results.Count == 0)
             {
@@ -199,7 +234,7 @@ namespace SYLOGOS.Forms
                 return;
             }
 
-            QueryResultDialog dlg = new(mainForm, results, typeof(T), title, summary);
+            QueryResultDialog dlg = new(mainForm, results, typeof(T), queryKey, summary, args);
             dlg.ShowDialog(mainForm);
         }
     }

@@ -286,9 +286,7 @@ namespace SYLOGOS.Forms
         {
             // Members
             memberContextMenu = new ContextMenuStrip();
-            memberContextMenu.Items.Add("📄 Export Member Only", null, (_, _) => ExportSelectedMember("member"));
-            memberContextMenu.Items.Add("👪 Export Family (Member + Children)", null, (_, _) => ExportSelectedMember("family"));
-            memberContextMenu.Items.Add("📦 Export All (Member + Family + Payments)", null, (_, _) => ExportSelectedMember("all"));
+            memberContextMenu.Items.Add("📥 Export All Members + Children", null, (_, _) => ExportAllMembersWithChildren());
             memberGrid.ContextMenuStrip = memberContextMenu;
 
             // Memberships
@@ -1131,8 +1129,16 @@ namespace SYLOGOS.Forms
                         ms.ReceiptNumber = seq.LastIssuedNumber;
                     }
 
-                    ms.MemberId = member.Id;
-                    db.Memberships.Add(ms);
+                    Membership newMs = new()
+                    {
+                        Year = ms.Year,
+                        Amount = ms.Amount,
+                        ReceiptNumber = ms.ReceiptNumber,
+                        ReceiptYear = ms.ReceiptYear,
+                        MemberId = member.Id
+                    };
+                    db.Memberships.Add(newMs);
+
                 }
 
 
@@ -1143,12 +1149,14 @@ namespace SYLOGOS.Forms
             }
             catch (Exception ex)
             {
+                string message = ex.InnerException?.Message ?? ex.Message;
                 MessageBox.Show(
-                    "An error occurred while saving:\n" + ex.Message,
+                    "An error occurred while saving:\n" + message,
                     "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
+
         }
 
 
@@ -1213,30 +1221,67 @@ namespace SYLOGOS.Forms
             }
         }
 
-        private void ExportSelectedMember(string mode)
+        /// <summary>
+        /// Exports a list of all members along with their associated children and membership details to an Excel file.
+        /// </summary>
+        /// <remarks>This method retrieves all members from the database, including their children and
+        /// membership information,  and organizes the data into a structured format for export. Each member's details,
+        /// including their children  (if any), are included in the output. The exported file is named "All Members and
+        /// Children".</remarks>
+        private void ExportAllMembersWithChildren()
         {
-            if (memberGrid.CurrentRow?.DataBoundItem is not Member m)
+            try
             {
-                MessageBox.Show("Select a member first.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+                using AppDbContext db = new();
+                List<Member> members = db.Members
+                    .Include(m => m.Children)
+                    .Include(m => m.Memberships)
+                    .OrderBy(m => m.FullName)
+                    .ToList();
 
-            // You can switch here based on mode
-            switch (mode)
+                int maxChildren = members.Max(m => m.Children.Count);
+
+                Dictionary<string, Func<Member, object?>> columns = new()
+                {
+                    ["ΑΡΙΘΜΟΣ ΜΕΛΟΥΣ"] = m => m.MemberNumber,
+                    ["ΟΝΟΜΑΤΕΠΩΝΥΜΟ"] = m => m.FullName,
+                    ["ΤΗΛΕΦΩΝΟ"] = m => m.MemberPhone,
+                    ["ΟΝΟΜΑΤΕΠΩΝΥΜΟ ΣΥΖΥΓΟΥ"] = m => m.SpouseFullName,
+                    ["ΤΗΛΕΦΩΝΟ ΣΥΖΥΓΟΥ"] = m => m.SpousePhone,
+                    ["ΠΟΛΗ"] = m => m.City,
+                    ["ΔΙΕΥΘΥΝΣΗ"] = m => m.Address,
+                    ["EMAIL"] = m => m.Email,
+                    ["ΑΡΙΘ. ΠΙΣΤΟΠΟΙΗΤΙΚΟΥ"] = m => m.CertificateNumber,
+                    ["ΕΚΔΟΤΗΣ"] = m => m.CertificatePublisher,
+                    ["ΣΗΜΕΙΩΣΕΙΣ"] = m => m.Notes,
+                    ["ΗΜΕΡΟΜΗΝΙΑ ΕΓΓΡΑΦΗΣ"] = m => m.RegistrationDate?.ToString("dd-MM-yyyy"),
+
+                    ["ΤΕΛΕΥΤΑΙΑ ΠΛΗΡΩΜΗ"] = m => m.Memberships
+                        .Where(ms => ms.ReceiptNumber != null && ms.ReceiptYear == ms.Year)
+                        .OrderByDescending(ms => ms.Year)
+                        .FirstOrDefault()?.Year,
+
+                    ["ΠΟΣΟ"] = m => m.Memberships
+                        .Where(ms => ms.ReceiptNumber != null && ms.ReceiptYear == ms.Year)
+                        .OrderByDescending(ms => ms.Year)
+                        .FirstOrDefault()?.Amount
+                };
+
+                for (int i = 0; i < maxChildren; i++)
+                {
+                    int index = i;
+                    columns[$"ΤΕΚΝΟ {i + 1} ΟΝΟΜΑ"] = m => m.Children.Count > index ? m.Children[index].FullName : "";
+                    columns[$"ΤΕΚΝΟ {i + 1} ΗΜ/ΝΙΑ ΓΕΝΝΗΣΕΩΣ"] = m => m.Children.Count > index ? m.Children[index].DateOfBirth.ToString("yyyy-MM-dd") : "";
+                }
+
+                ExportHelper.ExportExcelWithNotice(members, "All Members and Children", columns);
+            }
+            catch (Exception ex)
             {
-                case "member":
-                    MessageBox.Show($"Exporting member only: {m.FullName}");
-                    break;
-                case "family":
-                    MessageBox.Show($"Exporting member and children: {m.FullName}");
-                    break;
-                case "all":
-                    MessageBox.Show($"Exporting all data: {m.FullName}");
-                    break;
+                MessageBox.Show("Export failed:\n" + ex.Message, "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            // TODO: Add real export logic here
         }
+
 
         /// <summary>
         /// Exports the receipt for the selected membership payment as a PDF file.
