@@ -8,6 +8,10 @@ namespace SYLOGOS.Models
         public DbSet<Child> Children { get; set; }
         public DbSet<Membership> Memberships { get; set; }
         public DbSet<AppSetting> Settings { get; set; }
+        // ReceiptSequence is used to track the last issued receipt number for each year
+        // so that it can be incremented for the next receipt without reusing numbers.
+        public DbSet<ReceiptSequence> ReceiptSequences { get; set; }
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {

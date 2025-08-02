@@ -1,5 +1,6 @@
 
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Fluent;
 using SYLOGOS.Models;
 using SYLOGOS.Util;
 using System.ComponentModel;
@@ -290,11 +291,6 @@ namespace SYLOGOS.Forms
             memberContextMenu.Items.Add("📦 Export All (Member + Family + Payments)", null, (_, _) => ExportSelectedMember("all"));
             memberGrid.ContextMenuStrip = memberContextMenu;
 
-            // Children
-            childContextMenu = new ContextMenuStrip();
-            childContextMenu.Items.Add("📄 Export All Children", null, (_, _) => ExportChildrenToPdf());
-            childMembershipPanel.childGrid.ContextMenuStrip = childContextMenu;
-
             // Memberships
             membershipContextMenu = new ContextMenuStrip();
             membershipContextMenu.Items.Add("📄 Export Payment Receipt", null, (_, _) => ExportSelectedMembership());
@@ -419,11 +415,62 @@ namespace SYLOGOS.Forms
             };
             childMembershipPanel.btnAddMembership.Click += (_, _) =>
             {
-                if (currentMember == null) { MessageBox.Show("Save the member first."); return; }
-                memberships.Add(new Membership { Year = DateTime.Now.Year, Amount = 0 });
-                childMembershipPanel.membershipGrid.DataSource = memberships;
+                if (currentMember == null)
+                {
+                    MessageBox.Show("Save the member first.");
+                    return;
+                }
+
+                int defaultYear = DateTime.Now.Year;
+                int newYear = defaultYear;
+
+                // Step 1: Get list of existing years
+                HashSet<int> existingYears = memberships.Select(m => m.Year).ToHashSet();
+
+                // Step 2: Try defaultYear, then defaultYear+1, etc.
+                while (existingYears.Contains(newYear))
+                {
+                    newYear++;
+                    if (newYear > defaultYear + 10)
+                    {
+                        MessageBox.Show("Cannot add more payments — too many future entries.", "Limit Reached");
+                        return;
+                    }
+                }
+
+                // 🧮 Step 3: Preview receipt number
+                int nextNumber;
+                using (AppDbContext db = new AppDbContext())
+                {
+                    ReceiptSequence? seq = db.ReceiptSequences.FirstOrDefault(r => r.Year == newYear);
+                    if (seq == null)
+                    {
+                        int start = db.Settings.FirstOrDefault()?.ReceiptStartNumber ?? 1;
+                        nextNumber = start;
+                    }
+                    else
+                    {
+                        nextNumber = seq.LastIssuedNumber + 1;
+                    }
+                }
+
+                // 🎯 Step 4: Add row
+                Membership ms = new Membership
+                {
+                    Year = newYear,
+                    Amount = 0,
+                    ReceiptYear = newYear,
+                    ReceiptNumber = nextNumber
+                };
+
+                memberships.Add(ms); // <-- direct binding-safe add
+
+                childMembershipPanel.membershipGrid.Refresh(); // optional visual repaint
+
                 UpdateDetailCounts();
             };
+
+
             childMembershipPanel.btnDeleteMembership.Click += (_, _) =>
             {
                 if (childMembershipPanel.membershipGrid.CurrentRow?.DataBoundItem is Membership m)
@@ -433,6 +480,24 @@ namespace SYLOGOS.Forms
                     UpdateDetailCounts();
                 }
             };
+
+            // 🔒 Prevent editing Year of finalized receipt
+            childMembershipPanel.membershipGrid.CellBeginEdit += (s, e) =>
+            {
+                DataGridView grid = childMembershipPanel.membershipGrid;
+                string colName = grid.Columns[e.ColumnIndex].DataPropertyName;
+
+                if (colName == "Year" && grid.Rows[e.RowIndex].DataBoundItem is Membership ms)
+                {
+                    if (ms.ReceiptNumber != null && ms.ReceiptYear != null)
+                    {
+                        MessageBox.Show("Cannot change the year of a finalized receipt.", "Locked", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        e.Cancel = true;
+                    }
+                }
+            };
+
+
             ApplyGridStyles(childMembershipPanel.childGrid);
             ApplyGridStyles(childMembershipPanel.membershipGrid);
 
@@ -928,6 +993,24 @@ namespace SYLOGOS.Forms
                     {
                         childMembershipPanel.membershipGrid.FirstDisplayedScrollingRowIndex = i;
                     }
+                    // 🛡 Prevent duplicate membership years
+                    List<int> duplicateYears = memberships
+                        .GroupBy(m => m.Year)
+                        .Where(g => g.Count() > 1)
+                        .Select(g => g.Key)
+                        .ToList();
+
+                    if (duplicateYears.Any())
+                    {
+                        MessageBox.Show(
+                            $"Each membership year must be unique. Duplicates found for: {string.Join(", ", duplicateYears)}",
+                            "Duplicate Years",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
+
+                        return;
+                    }
+
                 }
 
                 // Aggregate and display errors
@@ -1019,14 +1102,39 @@ namespace SYLOGOS.Forms
                 db.Memberships.RemoveRange(db.Memberships.Where(m => m.MemberId == member.Id));
                 foreach (Membership ms in memberships)
                 {
-                    Membership newMs = new Membership
+                    // 🚨 Prevent user from changing year after receipt is issued
+                    if (ms.ReceiptNumber != null && ms.ReceiptYear != ms.Year)
                     {
-                        Year = ms.Year,
-                        Amount = ms.Amount,
-                        MemberId = member.Id
-                    };
-                    db.Memberships.Add(newMs);
+                        MessageBox.Show(
+                            $"Cannot change the payment year for a saved receipt.\n" +
+                            $"Receipt #{ms.ReceiptNumber} is already issued for {ms.ReceiptYear}.",
+                            "Receipt Already Issued",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
+                        return;
+                    }
+
+                    // ✅ Generate if new or not assigned
+                    if (ms.ReceiptNumber == null || ms.ReceiptNumber == 0 || ms.ReceiptYear != ms.Year)
+                    {
+                        int year = ms.Year;
+                        ReceiptSequence? seq = db.ReceiptSequences.FirstOrDefault(r => r.Year == year);
+                        if (seq == null)
+                        {
+                            int start = db.Settings.FirstOrDefault()?.ReceiptStartNumber ?? 1;
+                            seq = new ReceiptSequence { Year = year, LastIssuedNumber = start - 1 };
+                            db.ReceiptSequences.Add(seq);
+                        }
+
+                        seq.LastIssuedNumber++;
+                        ms.ReceiptYear = year;
+                        ms.ReceiptNumber = seq.LastIssuedNumber;
+                    }
+
+                    ms.MemberId = member.Id;
+                    db.Memberships.Add(ms);
                 }
+
 
                 db.SaveChanges();
                 // get the current member again to ensure we have the latest state
@@ -1130,29 +1238,40 @@ namespace SYLOGOS.Forms
             // TODO: Add real export logic here
         }
 
-        private void ExportChildrenToPdf()
-        {
-            if (children.Count == 0)
-            {
-                MessageBox.Show("No children to export.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            MessageBox.Show($"Exporting {children.Count} children to PDF...");
-            // TODO: Export children to PDF
-        }
-
+        /// <summary>
+        /// Exports the receipt for the selected membership payment as a PDF file.
+        /// </summary>
+        /// <remarks>This method retrieves the selected membership payment from the grid, along with the
+        /// associated member and application settings, to generate a receipt. The receipt is saved as a PDF file on the
+        /// user's desktop with a filename based on the member's name and the membership year. If no membership is
+        /// selected, or if the required data cannot be loaded, an appropriate error message is displayed.</remarks>
         private void ExportSelectedMembership()
         {
-            if (childMembershipPanel.membershipGrid.CurrentRow?.DataBoundItem is not Membership m)
+            if (childMembershipPanel.membershipGrid.CurrentRow?.DataBoundItem is not Membership membership)
             {
                 MessageBox.Show("Select a membership payment first.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            MessageBox.Show($"Exporting receipt for year {m.Year} amount {m.Amount:C2}.");
-            // TODO: Export payment receipt PDF
+            using AppDbContext db = new();
+            Member? member = db.Members.FirstOrDefault(m => m.Id == membership.MemberId);
+            AppSetting? settings = db.Settings.FirstOrDefault();
+
+            if (member == null || settings == null)
+            {
+                MessageBox.Show("Could not load member or settings for export.", "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            string fileName = $"Receipt_{ExportHelper.SanitizeFileName(member.FullName)}_{membership.Year}.pdf";
+            string path = Path.Combine(ExportHelper.GetDesktopPath(), fileName);
+
+            ReceiptDocument doc = new(member, membership, settings);
+            doc.GeneratePdf(path);
+
+            MessageBox.Show($"Receipt exported to:\n{path}", "Export Complete");
         }
+
 
 
         /// <summary>

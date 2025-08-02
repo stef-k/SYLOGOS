@@ -47,18 +47,23 @@ namespace SYLOGOS.Util
 
         /// <summary>
         /// Returns members who have not paid membership for the specified year.
+        /// A year is considered paid if there is a membership with ReceiptNumber and ReceiptYear == Year.
         /// </summary>
         public static List<Member> GetUnpaidMembers(AppDbContext db, int year)
         {
             return db.Members
                 .Include(m => m.Memberships)
-                .Where(m => !m.Memberships.Any(ms => ms.Year == year))
+                .Where(m => !m.Memberships.Any(ms =>
+                    ms.Year == year &&
+                    ms.ReceiptNumber != null &&
+                    ms.ReceiptYear == ms.Year))
                 .OrderBy(m => m.FullName)
                 .ToList();
         }
 
         /// <summary>
-        /// Returns members who have fully paid all membership years since their registration.
+        /// Returns members who have paid for every year from registration up to current year.
+        /// Paid = has receipt and receiptYear matches Year.
         /// </summary>
         public static List<Member> GetFullyPaidMembers(AppDbContext db)
         {
@@ -67,20 +72,26 @@ namespace SYLOGOS.Util
             return db.Members
                 .Include(m => m.Memberships)
                 .Where(m => m.RegistrationDate.HasValue && m.Memberships.Count > 0)
-                .AsEnumerable() // switch to in-memory LINQ
+                .AsEnumerable()
                 .Where(m =>
                 {
                     int startYear = m.RegistrationDate!.Value.Year;
-                    IEnumerable<int> requiredYears = Enumerable.Range(startYear, currentYear - startYear + 1);
-                    HashSet<int> paidYears = m.Memberships.Select(ms => ms.Year).Distinct().ToHashSet();
-                    return requiredYears.All(y => paidYears.Contains(y));
+                    IEnumerable<int> expectedYears = Enumerable.Range(startYear, currentYear - startYear + 1);
+
+                    HashSet<int> paidYears = m.Memberships
+                        .Where(ms => ms.ReceiptNumber != null && ms.ReceiptYear == ms.Year)
+                        .Select(ms => ms.Year)
+                        .ToHashSet();
+
+                    return expectedYears.All(y => paidYears.Contains(y));
                 })
                 .OrderBy(m => m.FullName)
                 .ToList();
         }
 
         /// <summary>
-        /// Returns members who have some payments but skipped at least one year since registration.
+        /// Returns members who have at least one valid payment but missed at least one year.
+        /// Valid = receipt present and receiptYear matches.
         /// </summary>
         public static List<Member> GetPartiallyPaidMembers(AppDbContext db)
         {
@@ -89,13 +100,18 @@ namespace SYLOGOS.Util
             return db.Members
                 .Include(m => m.Memberships)
                 .Where(m => m.RegistrationDate.HasValue && m.Memberships.Count > 0)
-                .AsEnumerable() // switch to in-memory LINQ
+                .AsEnumerable()
                 .Where(m =>
                 {
                     int startYear = m.RegistrationDate!.Value.Year;
                     IEnumerable<int> expectedYears = Enumerable.Range(startYear, currentYear - startYear + 1);
-                    HashSet<int> paidYears = m.Memberships.Select(ms => ms.Year).Distinct().ToHashSet();
-                    return expectedYears.Any(y => !paidYears.Contains(y)); // has missing year(s)
+
+                    HashSet<int> paidYears = m.Memberships
+                        .Where(ms => ms.ReceiptNumber != null && ms.ReceiptYear == ms.Year)
+                        .Select(ms => ms.Year)
+                        .ToHashSet();
+
+                    return paidYears.Count > 0 && expectedYears.Any(y => !paidYears.Contains(y));
                 })
                 .OrderBy(m => m.FullName)
                 .ToList();
@@ -272,7 +288,7 @@ namespace SYLOGOS.Util
         /// <summary>
         /// Randomly selects N members from the full member list.
         /// </summary>
-        public static List<Member> PickRandomMembers(AppDbContext db, int count)
+        public static List<Member> PickRandomMembers(AppDbContext db, int count, bool excludeUnpaid = false)
         {
             int total = db.Members.Count();
             if (count >= total)
@@ -283,7 +299,18 @@ namespace SYLOGOS.Util
                     .ToList();
             }
 
-            List<int> ids = db.Members
+            IQueryable<Member> query = db.Members.Include(m => m.Memberships);
+
+            if (excludeUnpaid)
+            {
+                int currentYear = DateTime.Now.Year;
+                query = query.Where(m => m.Memberships.Any(ms =>
+                    ms.Year == currentYear &&
+                    ms.ReceiptNumber != null &&
+                    ms.ReceiptYear == ms.Year));
+            }
+
+            List<int> ids = query
                 .Select(m => m.Id)
                 .ToList();
 
@@ -301,21 +328,30 @@ namespace SYLOGOS.Util
         /// <summary>
         /// Randomly selects N members from those whose city matches the input (case-insensitive).
         /// </summary>
-        public static List<Member> PickRandomMembersByCity(AppDbContext db, string city, int count)
+        public static List<Member> PickRandomMembersByCity(AppDbContext db, string city, int count, bool excludeUnpaid = false)
         {
-            List<int> ids = db.Members
-                .AsNoTracking()
-                .Where(m => !string.IsNullOrWhiteSpace(m.City))
-                .ToList()
-                .Where(m => m.City!.Contains(city, StringComparison.OrdinalIgnoreCase))
-                .Select(m => m.Id)
-                .ToList();
+            int currentYear = DateTime.Now.Year;
+            string cityUpper = city.ToUpper();
+
+            IQueryable<Member> query = db.Members
+                .Include(m => m.Memberships)
+                .Where(m => !string.IsNullOrWhiteSpace(m.City) &&
+                            m.City.ToUpper().Contains(cityUpper));
+
+            if (excludeUnpaid)
+            {
+                query = query.Where(m => m.Memberships.Any(ms =>
+                    ms.Year == currentYear &&
+                    ms.ReceiptNumber != null &&
+                    ms.ReceiptYear == ms.Year));
+            }
+
+            List<int> ids = query.Select(m => m.Id).ToList();
 
             if (count >= ids.Count)
             {
-                return db.Members
+                return query
                     .AsNoTracking()
-                    .Where(m => ids.Contains(m.Id))
                     .OrderBy(m => m.FullName)
                     .ToList();
             }
@@ -325,10 +361,11 @@ namespace SYLOGOS.Util
                 .Take(count)
                 .ToList();
 
-            return db.Members
+            return query
                 .AsNoTracking()
                 .Where(m => selectedIds.Contains(m.Id))
                 .ToList();
         }
+
     }
 }

@@ -4,7 +4,8 @@
     {
         Text,
         Numeric,
-        Date
+        Date,
+        Checkbox
     }
 
     public class InputPromptDialog : Form
@@ -56,6 +57,7 @@
                 {
                     InputType.Numeric => CreateNullableNumericUpDown(),
                     InputType.Date => new DateTimePicker { Format = DateTimePickerFormat.Short, Dock = DockStyle.Fill },
+                    InputType.Checkbox => new CheckBox { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft },
                     _ => new TextBox { Dock = DockStyle.Fill }
                 };
 
@@ -146,8 +148,10 @@
                         TextBox tb => string.IsNullOrWhiteSpace(tb.Text) ? null : tb.Text,
                         NumericUpDown num => string.IsNullOrWhiteSpace(num.Text) ? null : num.Value,
                         DateTimePicker dt => dt.Value.Date,
+                        CheckBox cb => cb.Checked,
                         _ => null
                     };
+
                     Values[kvp.Key] = val;
                 }
             }

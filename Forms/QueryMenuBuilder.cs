@@ -149,22 +149,37 @@ namespace SYLOGOS.Forms
             // --- Random Pick Queries ---
             queriesMenu.DropDownItems.Add(BuildQueryItem("Randomly Pick N Members...", () =>
             {
-                Dictionary<string, object?>? input = InputPromptDialog.Show("Pick Random", new[] { "Count", "Title" }, new[] { InputType.Numeric, InputType.Text });
-                if (input != null && input["Count"] is decimal n && input["Title"] is string title)
+                Dictionary<string, object?>? input = InputPromptDialog.Show(
+                    "Pick Random",
+                    new[] { "Count", "Title", "Exclude Unpaid?" },
+                    new[] { InputType.Numeric, InputType.Text, InputType.Checkbox });
+
+                if (input != null &&
+                    input["Count"] is decimal n &&
+                    input["Title"] is string title &&
+                    input["Exclude Unpaid?"] is bool excludeUnpaid)
                 {
                     using AppDbContext db = new();
-                    List<Member> results = Queries.PickRandomMembers(db, (int)n);
+                    List<Member> results = Queries.PickRandomMembers(db, (int)n, excludeUnpaid);
                     QueryResultDialog.Show(mainForm, results, title);
                 }
             }));
 
             queriesMenu.DropDownItems.Add(BuildQueryItem("Randomly Pick N Members by City...", () =>
             {
-                Dictionary<string, object?>? input = InputPromptDialog.Show("Pick by City", new[] { "City", "Count", "Title" }, new[] { InputType.Text, InputType.Numeric, InputType.Text });
-                if (input != null && input["City"] is string city && input["Count"] is decimal n && input["Title"] is string title)
+                Dictionary<string, object?>? input = InputPromptDialog.Show(
+                    "Pick by City",
+                    new[] { "City", "Count", "Title", "Exclude Unpaid?" },
+                    new[] { InputType.Text, InputType.Numeric, InputType.Text, InputType.Checkbox });
+
+                if (input != null &&
+                    input["City"] is string city &&
+                    input["Count"] is decimal n &&
+                    input["Title"] is string title &&
+                    input["Exclude Unpaid?"] is bool excludeUnpaid)
                 {
                     using AppDbContext db = new();
-                    List<Member> results = Queries.PickRandomMembersByCity(db, city, (int)n);
+                    List<Member> results = Queries.PickRandomMembersByCity(db, city, (int)n, excludeUnpaid);
                     QueryResultDialog.Show(mainForm, results, title);
                 }
             }));

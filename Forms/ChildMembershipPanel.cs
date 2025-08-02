@@ -130,7 +130,18 @@ namespace SYLOGOS.Forms
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 AllowUserToAddRows = false
             };
-            membershipGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Year", DataPropertyName = "Year" });
+            membershipGrid.Columns.Clear();
+
+            membershipGrid.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                HeaderText = "Year",
+                DataPropertyName = "Year",
+                DefaultCellStyle = new DataGridViewCellStyle
+                {
+                    Alignment = DataGridViewContentAlignment.MiddleCenter
+                }
+            });
+
             membershipGrid.Columns.Add(new DataGridViewTextBoxColumn
             {
                 HeaderText = "Amount",
@@ -138,9 +149,25 @@ namespace SYLOGOS.Forms
                 DefaultCellStyle = new DataGridViewCellStyle
                 {
                     Format = "C2",
-                    FormatProvider = new CultureInfo("el-GR")
+                    FormatProvider = new CultureInfo("el-GR"),
+                    Alignment = DataGridViewContentAlignment.MiddleRight
                 }
             });
+
+            membershipGrid.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                HeaderText = "Receipt #",
+                DataPropertyName = "ReceiptNumber",
+                ValueType = typeof(int?),
+                ReadOnly = true,
+                DefaultCellStyle = new DataGridViewCellStyle
+                {
+                    Alignment = DataGridViewContentAlignment.MiddleCenter,
+                    NullValue = "",
+                    Format = "N0"
+                }
+            });
+
             membershipGrid.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
             membershipGrid.ColumnHeadersDefaultCellStyle.Font = new Font(membershipGrid.Font, FontStyle.Bold);
 

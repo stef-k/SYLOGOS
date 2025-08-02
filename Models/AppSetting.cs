@@ -19,6 +19,8 @@
 
         public string? Address { get; set; }
 
+        public int ReceiptStartNumber { get; set; } = 1; // Start number for receipt numbering for each year
+
         // Binary column to store image
         public byte[]? ClubLogo { get; set; }
 

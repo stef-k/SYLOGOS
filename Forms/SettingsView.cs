@@ -11,6 +11,8 @@ namespace SYLOGOS.Forms
         private TextBox txtEmail;
         private TextBox txtWebsite;
         private TextBox txtAddress;
+        private NumericUpDown nudReceiptStart;
+        private Label lblReceiptNote;
 
         private CheckBox chkDarkMode;
         private ComboBox cmbScale;
@@ -34,20 +36,27 @@ namespace SYLOGOS.Forms
             Dock = DockStyle.Fill;
             Padding = new Padding(20);
 
-            TableLayoutPanel layout = new TableLayoutPanel
+            TableLayoutPanel root = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 2,
+                RowCount = 0,
+                AutoSize = true
+            };
+            root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+            root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+
+            // ---- CLUB INFO ----
+            TableLayoutPanel clubTable = new TableLayoutPanel
             {
                 Dock = DockStyle.Top,
                 ColumnCount = 2,
                 RowCount = 0,
                 AutoSize = true
             };
+            clubTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100));
+            clubTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
 
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100));
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-
-            // --- CLUB DETAILS HEADER ---
-            layout.RowCount++;
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
             Label clubHeader = new Label
             {
                 Text = "🏛️ Στοιχεία Συλλόγου",
@@ -55,48 +64,30 @@ namespace SYLOGOS.Forms
                 TextAlign = ContentAlignment.MiddleLeft,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold)
             };
-            layout.Controls.Add(clubHeader, 0, layout.RowCount - 1);
-            layout.SetColumnSpan(clubHeader, 2);
+            clubTable.RowCount++;
+            clubTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            clubTable.Controls.Add(clubHeader, 0, 0);
+            clubTable.SetColumnSpan(clubHeader, 2);
 
-            // --- Club Name ---
-            layout.RowCount++;
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-            layout.Controls.Add(new Label { Text = "Club Name:", TextAlign = ContentAlignment.MiddleRight, Dock = DockStyle.Fill }, 0, layout.RowCount - 1);
-            txtClubName = new TextBox { Dock = DockStyle.Fill };
-            layout.Controls.Add(txtClubName, 1, layout.RowCount - 1);
+            void AddClubRow(string label, out TextBox box)
+            {
+                clubTable.RowCount++;
+                clubTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+                clubTable.Controls.Add(new Label { Text = label, TextAlign = ContentAlignment.MiddleRight, Dock = DockStyle.Fill }, 0, clubTable.RowCount - 1);
+                box = new TextBox { Dock = DockStyle.Fill };
+                clubTable.Controls.Add(box, 1, clubTable.RowCount - 1);
+            }
 
-            // --- Phone ---
-            layout.RowCount++;
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-            layout.Controls.Add(new Label { Text = "Phone:", TextAlign = ContentAlignment.MiddleRight, Dock = DockStyle.Fill }, 0, layout.RowCount - 1);
-            txtPhone = new TextBox { Dock = DockStyle.Fill };
-            layout.Controls.Add(txtPhone, 1, layout.RowCount - 1);
+            AddClubRow("Club Name:", out txtClubName);
+            AddClubRow("Phone:", out txtPhone);
+            AddClubRow("Email:", out txtEmail);
+            AddClubRow("Website:", out txtWebsite);
+            AddClubRow("Address:", out txtAddress);
 
-            // --- Email ---
-            layout.RowCount++;
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-            layout.Controls.Add(new Label { Text = "Email:", TextAlign = ContentAlignment.MiddleRight, Dock = DockStyle.Fill }, 0, layout.RowCount - 1);
-            txtEmail = new TextBox { Dock = DockStyle.Fill };
-            layout.Controls.Add(txtEmail, 1, layout.RowCount - 1);
-
-            // --- Website ---
-            layout.RowCount++;
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-            layout.Controls.Add(new Label { Text = "Website:", TextAlign = ContentAlignment.MiddleRight, Dock = DockStyle.Fill }, 0, layout.RowCount - 1);
-            txtWebsite = new TextBox { Dock = DockStyle.Fill };
-            layout.Controls.Add(txtWebsite, 1, layout.RowCount - 1);
-
-            // --- Address ---
-            layout.RowCount++;
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-            layout.Controls.Add(new Label { Text = "Address:", TextAlign = ContentAlignment.MiddleRight, Dock = DockStyle.Fill }, 0, layout.RowCount - 1);
-            txtAddress = new TextBox { Dock = DockStyle.Fill };
-            layout.Controls.Add(txtAddress, 1, layout.RowCount - 1);
-
-            // --- Logo ---
-            layout.RowCount++;
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 220));
-            layout.Controls.Add(new Label { Text = "Logo:", TextAlign = ContentAlignment.MiddleRight, Dock = DockStyle.Fill }, 0, layout.RowCount - 1);
+            // Logo row
+            clubTable.RowCount++;
+            clubTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 220));
+            clubTable.Controls.Add(new Label { Text = "Logo:", TextAlign = ContentAlignment.MiddleRight, Dock = DockStyle.Fill }, 0, clubTable.RowCount - 1);
             logoBox = new PictureBox
             {
                 Dock = DockStyle.Left,
@@ -105,28 +96,74 @@ namespace SYLOGOS.Forms
                 BorderStyle = BorderStyle.FixedSingle,
                 SizeMode = PictureBoxSizeMode.Zoom
             };
-            layout.Controls.Add(logoBox, 1, layout.RowCount - 1);
+            clubTable.Controls.Add(logoBox, 1, clubTable.RowCount - 1);
 
-            // --- Upload / Clear Buttons ---
-            layout.RowCount++;
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
-            FlowLayoutPanel logoButtonPanel = new FlowLayoutPanel
-            {
-                Dock = DockStyle.Left,
-                AutoSize = true
-            };
+            // Upload / Clear buttons
+            FlowLayoutPanel logoButtons = new FlowLayoutPanel { Dock = DockStyle.Left, AutoSize = true };
             btnUpload = new Button { Text = "Upload Logo" };
             btnUpload.Click += BtnUpload_Click;
             btnClearLogo = new Button { Text = "Clear Logo" };
             btnClearLogo.Click += (_, _) => logoBox.Image = null;
-            logoButtonPanel.Controls.Add(btnUpload);
-            logoButtonPanel.Controls.Add(btnClearLogo);
-            layout.Controls.Add(new Label(), 0, layout.RowCount - 1);
-            layout.Controls.Add(logoButtonPanel, 1, layout.RowCount - 1);
+            logoButtons.Controls.Add(btnUpload);
+            logoButtons.Controls.Add(btnClearLogo);
+            clubTable.RowCount++;
+            clubTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+            clubTable.Controls.Add(new Label(), 0, clubTable.RowCount - 1);
+            clubTable.Controls.Add(logoButtons, 1, clubTable.RowCount - 1);
 
-            // --- APPLICATION SETTINGS HEADER ---
-            layout.RowCount++;
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            // Receipt start number
+            Label lblReceiptStart = new Label
+            {
+                Text = "Receipt Start Number:",
+                AutoSize = true,
+                TextAlign = ContentAlignment.MiddleRight,
+                Dock = DockStyle.Fill
+            };
+
+            nudReceiptStart = new NumericUpDown
+            {
+                Minimum = 1,
+                Maximum = 99999,
+                Increment = 1,
+                Value = 1,
+                Dock = DockStyle.Fill
+            };
+
+            clubTable.RowCount++;
+            clubTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            clubTable.Controls.Add(lblReceiptStart, 0, clubTable.RowCount - 1);
+            clubTable.Controls.Add(nudReceiptStart, 1, clubTable.RowCount - 1);
+
+            lblReceiptNote = new Label
+            {
+                Text = "Αυτός ο αριθμός χρησιμοποιείται μόνο κατά την έκδοση της πρώτης απόδειξης του έτους. Μόλις εκδοθούν αποδείξεις για το έτος, η τιμή αυτή θα έχει πλέον επίδραση στο επόμενο έτος.",
+                ForeColor = Color.DimGray,
+                Font = new Font("Segoe UI", 11, FontStyle.Italic),
+                AutoSize = false,
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.TopLeft,
+                Padding = new Padding(0),
+                Margin = new Padding(0, 2, 0, 8),
+                Width = 500 // ⬅ important
+            };
+
+            clubTable.RowCount++;
+            clubTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 60)); // for testing
+            clubTable.Controls.Add(lblReceiptNote, 0, clubTable.RowCount - 1);
+            clubTable.SetColumnSpan(lblReceiptNote, 2);
+
+
+            // ---- APP SETTINGS ----
+            TableLayoutPanel appTable = new TableLayoutPanel
+            {
+                Dock = DockStyle.Top,
+                ColumnCount = 2,
+                RowCount = 0,
+                AutoSize = true
+            };
+            appTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100));
+            appTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+
             Label appHeader = new Label
             {
                 Text = "⚙️ Ρυθμίσεις Εφαρμογής ",
@@ -134,28 +171,31 @@ namespace SYLOGOS.Forms
                 TextAlign = ContentAlignment.MiddleLeft,
                 Font = new Font("Segoe UI", 10, FontStyle.Bold)
             };
-            layout.Controls.Add(appHeader, 0, layout.RowCount - 1);
-            layout.SetColumnSpan(appHeader, 2);
+            appTable.RowCount++;
+            appTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            appTable.Controls.Add(appHeader, 0, 0);
+            appTable.SetColumnSpan(appHeader, 2);
 
-            // --- Dark Mode ---
-            layout.RowCount++;
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            // Dark mode
+            appTable.RowCount++;
+            appTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
             chkDarkMode = new CheckBox { Text = "Enable Dark Mode", AutoSize = true };
-            layout.Controls.Add(new Label(), 0, layout.RowCount - 1);
-            layout.Controls.Add(chkDarkMode, 1, layout.RowCount - 1);
+            appTable.Controls.Add(new Label(), 0, appTable.RowCount - 1);
+            appTable.Controls.Add(chkDarkMode, 1, appTable.RowCount - 1);
 
-            // --- UI Scale ---
-            layout.RowCount++;
-            layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-            layout.Controls.Add(new Label { Text = "UI Scale:", TextAlign = ContentAlignment.MiddleRight, Dock = DockStyle.Fill }, 0, layout.RowCount - 1);
+            // UI scale
+            appTable.RowCount++;
+            appTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            appTable.Controls.Add(new Label { Text = "UI Scale:", TextAlign = ContentAlignment.MiddleRight, Dock = DockStyle.Fill }, 0, appTable.RowCount - 1);
             cmbScale = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Left };
             cmbScale.Items.AddRange(Enum.GetNames(typeof(UiScaleMode)));
-            layout.Controls.Add(cmbScale, 1, layout.RowCount - 1);
+            appTable.Controls.Add(cmbScale, 1, appTable.RowCount - 1);
 
-            // --- Save Button ---
-            btnSave = new Button { Text = "Save Settings", AutoSize = true };
-            btnSave.Click += BtnSave_Click;
+            // Add both tables
+            root.Controls.Add(clubTable, 0, 0);
+            root.Controls.Add(appTable, 1, 0);
 
+            // Save button row
             FlowLayoutPanel savePanel = new FlowLayoutPanel
             {
                 Dock = DockStyle.Top,
@@ -164,9 +204,11 @@ namespace SYLOGOS.Forms
                 Padding = new Padding(0, 10, 0, 0),
                 WrapContents = false
             };
+            btnSave = new Button { Text = "Save Settings", AutoSize = true };
+            btnSave.Click += BtnSave_Click;
             savePanel.Controls.Add(btnSave);
 
-            Controls.Add(layout);
+            Controls.Add(root);
             Controls.Add(savePanel);
         }
 
@@ -176,30 +218,39 @@ namespace SYLOGOS.Forms
             using AppDbContext db = new AppDbContext();
 
             currentSetting = db.Settings.FirstOrDefault();
+            bool isNew = false;
+
             if (currentSetting == null)
             {
-                currentSetting = new AppSetting
-                {
-                    ClubName = "",
-                    Phone = "",
-                    ClubLogo = null
-                };
+                currentSetting = new AppSetting();
                 db.Settings.Add(currentSetting);
                 db.SaveChanges();
+                isNew = true;
             }
 
-            txtClubName.Text = currentSetting.ClubName;
-            txtPhone.Text = currentSetting.Phone;
+            // Populate UI fields safely
+            txtClubName.Text = currentSetting.ClubName ?? "";
+            txtPhone.Text = currentSetting.Phone ?? "";
             txtEmail.Text = currentSetting.Email ?? "";
             txtWebsite.Text = currentSetting.Website ?? "";
             txtAddress.Text = currentSetting.Address ?? "";
+            nudReceiptStart.Value = Math.Clamp(currentSetting.ReceiptStartNumber, (int)nudReceiptStart.Minimum, (int)nudReceiptStart.Maximum);
 
             logoBox.Image = currentSetting.ClubLogo != null
                 ? ConvertBytesToImage(currentSetting.ClubLogo)
                 : null;
 
             chkDarkMode.Checked = currentSetting.UseDarkMode;
-            cmbScale.SelectedItem = currentSetting.ScaleMode.ToString();
+
+            // Ensure valid enum
+            cmbScale.SelectedItem = Enum.IsDefined(typeof(UiScaleMode), currentSetting.ScaleMode)
+                ? currentSetting.ScaleMode.ToString()
+                : UiScaleMode.Normal.ToString();
+
+            if (isNew)
+            {
+                MessageBox.Show("A new default settings profile was created.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private void BtnUpload_Click(object sender, EventArgs e)

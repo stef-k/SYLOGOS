@@ -20,6 +20,24 @@ namespace SYLOGOS
             using (AppDbContext context = new AppDbContext())
             {
                 context.Database.Migrate(); // Creates DB and applies migrations
+
+                // Ensure Settings row exists
+                if (!context.Settings.Any())
+                {
+                    context.Settings.Add(new AppSetting
+                    {
+                        ClubName = "My Club",
+                        Phone = "",
+                        Email = "",
+                        Website = "",
+                        Address = "",
+                        ReceiptStartNumber = 1,
+                        UseDarkMode = false,
+                        ScaleMode = UiScaleMode.Normal
+                    });
+
+                    context.SaveChanges();
+                }
             }
 
             // To customize application configuration such as set high DPI settings or default font,
