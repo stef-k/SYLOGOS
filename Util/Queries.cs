@@ -240,12 +240,12 @@ namespace SYLOGOS.Util
 
 
         /// <summary>
-        /// Returns members who are missing both email and phone.
+        /// Returns members who are missing both email or phone.
         /// </summary>
         public static List<Member> GetMembersMissingEmailOrPhone(AppDbContext db)
         {
             return db.Members
-                .Where(m => string.IsNullOrWhiteSpace(m.Email) && string.IsNullOrWhiteSpace(m.MemberPhone))
+                .Where(m => string.IsNullOrWhiteSpace(m.Email) || string.IsNullOrWhiteSpace(m.MemberPhone))
                 .OrderBy(m => m.FullName)
                 .ToList();
         }
@@ -290,60 +290,19 @@ namespace SYLOGOS.Util
         /// </summary>
         public static List<Member> PickRandomMembers(AppDbContext db, int count, bool excludeUnpaid = false)
         {
-            int total = db.Members.Count();
-            if (count >= total)
-            {
-                return db.Members
-                    .AsNoTracking()
-                    .OrderBy(m => m.FullName)
-                    .ToList();
-            }
-
-            IQueryable<Member> query = db.Members.Include(m => m.Memberships);
-
-            if (excludeUnpaid)
-            {
-                int currentYear = DateTime.Now.Year;
-                query = query.Where(m => m.Memberships.Any(ms =>
-                    ms.Year == currentYear &&
-                    ms.ReceiptNumber != null &&
-                    ms.ReceiptYear == ms.Year));
-            }
-
-            List<int> ids = query
-                .Select(m => m.Id)
-                .ToList();
-
-            List<int> selectedIds = ids
-                .OrderBy(_ => Random.Shared.Next())
-                .Take(count)
-                .ToList();
-
-            return db.Members
-                .AsNoTracking()
-                .Where(m => selectedIds.Contains(m.Id))
-                .ToList();
-        }
-
-        /// <summary>
-        /// Randomly selects N members from those whose city matches the input (case-insensitive).
-        /// </summary>
-        public static List<Member> PickRandomMembersByCity(AppDbContext db, string city, int count, bool excludeUnpaid = false)
-        {
             int currentYear = DateTime.Now.Year;
-            string cityUpper = city.ToUpper();
 
             IQueryable<Member> query = db.Members
-                .Include(m => m.Memberships)
-                .Where(m => !string.IsNullOrWhiteSpace(m.City) &&
-                            m.City.ToUpper().Contains(cityUpper));
+                .Include(m => m.Memberships);
 
             if (excludeUnpaid)
             {
-                query = query.Where(m => m.Memberships.Any(ms =>
-                    ms.Year == currentYear &&
-                    ms.ReceiptNumber != null &&
-                    ms.ReceiptYear == ms.Year));
+                query = query.Where(m =>
+                    m.Memberships.Any(ms =>
+                        ms.Year == currentYear &&
+                        ms.ReceiptNumber != null &&
+                        ms.ReceiptNumber > 0 &&
+                        ms.ReceiptYear == ms.Year));
             }
 
             List<int> ids = query.Select(m => m.Id).ToList();
@@ -367,5 +326,48 @@ namespace SYLOGOS.Util
                 .ToList();
         }
 
+        /// <summary>
+        /// Randomly selects N members from those whose city matches the input (case-insensitive).
+        /// </summary>
+        public static List<Member> PickRandomMembersByCity(AppDbContext db, string city, int count, bool excludeUnpaid = false)
+        {
+            int currentYear = DateTime.Now.Year;
+            string cityUpper = city.ToUpper();
+
+            IQueryable<Member> query = db.Members
+                .Include(m => m.Memberships)
+                .Where(m => !string.IsNullOrWhiteSpace(m.City) &&
+                            m.City.ToUpper().Contains(cityUpper));
+
+            if (excludeUnpaid)
+            {
+                query = query.Where(m =>
+                    m.Memberships.Any(ms =>
+                        ms.Year == currentYear &&
+                        ms.ReceiptNumber != null &&
+                        ms.ReceiptNumber > 0 &&
+                        ms.ReceiptYear == ms.Year));
+            }
+
+            List<int> ids = query.Select(m => m.Id).ToList();
+
+            if (count >= ids.Count)
+            {
+                return query
+                    .AsNoTracking()
+                    .OrderBy(m => m.FullName)
+                    .ToList();
+            }
+
+            List<int> selectedIds = ids
+                .OrderBy(_ => Random.Shared.Next())
+                .Take(count)
+                .ToList();
+
+            return query
+                .AsNoTracking()
+                .Where(m => selectedIds.Contains(m.Id))
+                .ToList();
+        }
     }
 }

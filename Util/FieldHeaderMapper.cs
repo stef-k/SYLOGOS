@@ -9,6 +9,7 @@ namespace SYLOGOS.Util
             // Member
             ["Id"] = "ID",
             ["MemberNumber"] = "ΑΡΙΘΜΟΣ ΜΕΛΟΥΣ",
+            ["MemberName"] = "ΟΝΟΜΑΤΕΠΩΝΥΜΟ",
             ["FullName"] = "ΟΝΟΜΑΤΕΠΩΝΥΜΟ",
             ["SpouseFullName"] = "ΟΝΟΜΑ ΣΥΖΥΓΟΥ",
             ["City"] = "ΠΟΛΗ",
@@ -45,20 +46,49 @@ namespace SYLOGOS.Util
 
             // ReceiptSequence
             ["LastIssuedNumber"] = "ΤΕΛΕΥΤΑΙΟΣ ΑΡΙΘΜΟΣ"
-        };
 
+        };
         public static string GetHeader(string fieldName, Type? modelType = null)
         {
-            return fieldName == "Address"
-                ? modelType == typeof(AppSetting) ? "ΔΙΕΥΘΥΝΣΗ ΣΥΛΛΟΓΟΥ" : "ΔΙΕΥΘΥΝΣΗ"
-                : fieldName == "ClubName"
-                ? "ΟΝΟΜΑ ΣΥΛΛΟΓΟΥ"
-                : fieldName == "Phone" && modelType == typeof(AppSetting)
-                ? "ΤΗΛΕΦΩΝΟ ΣΥΛΛΟΓΟΥ"
-                : _defaultMap.TryGetValue(fieldName, out string? result)
+            // Fix 1: Disambiguate by field + model class explicitly
+            if (fieldName == "FullName")
+            {
+                if (modelType == typeof(Child) || modelType?.Name.Contains("Child") == true)
+                {
+                    return "ΟΝΟΜΑΤΕΠΩΝΥΜΟ ΤΕΚΝΟΥ";
+                }
+
+                return "ΟΝΟΜΑΤΕΠΩΝΥΜΟ"; // fallback to Member
+            }
+
+            if (fieldName == "Email")
+            {
+                return modelType == typeof(AppSetting) ? "EMAIL ΣΥΛΛΟΓΟΥ" : "EMAIL";
+            }
+
+            if (fieldName == "Address")
+            {
+                return modelType == typeof(AppSetting) ? "ΔΙΕΥΘΥΝΣΗ ΣΥΛΛΟΓΟΥ" : "ΔΙΕΥΘΥΝΣΗ";
+            }
+
+            // Fix 2: Catch common DTO cases
+            if (fieldName == "Children")
+            {
+                return "ΤΕΚΝΑ";
+            }
+
+            if (fieldName == "MemberName")
+            {
+                return "ΟΝΟΜΑΤΕΠΩΝΥΜΟ";
+            }
+
+            // Default fallback
+            return _defaultMap.TryGetValue(fieldName, out string? result)
                 ? result
                 : fieldName.ToUpperInvariant();
         }
+
+
 
         private static readonly Dictionary<string, string> _queryTitleTemplates = new()
         {
@@ -67,7 +97,7 @@ namespace SYLOGOS.Util
             ["PartiallyPaidMembers"] = "ΜΕΛΗ ΜΕ ΜΕΡΙΚΗ ΕΞΟΦΛΗΣΗ",
             ["MembershipsByYear"] = "ΠΛΗΡΩΜΕΣ ΣΥΝΔΡΟΜΩΝ ΓΙΑ ΤΟ ΕΤΟΣ {0}",
             ["TotalPaymentsByYear"] = "ΣΥΝΟΛΟ ΠΛΗΡΩΜΩΝ ΓΙΑ ΤΟ ΕΤΟΣ {0}",
-            ["ChildrenWithBirthday"] = "ΤΕΚΝΑ ΜΕ ΓΕΝΕΘΛΙΑ ({0:dd/MM})",
+            ["ChildrenWithBirthday"] = "ΤΕΚΝΑ ΜΕ ΓΕΝΕΘΛΙΑ ({0:dd/MM/yyyy})",
             ["ChildrenAgedBetween"] = "ΤΕΚΝΑ ΗΛΙΚΙΑΣ {0}–{1} ΕΤΩΝ",
             ["ChildrenPerMemberSummary"] = "ΣΥΝΟΨΗ ΤΕΚΝΩΝ ΑΝΑ ΜΕΛΟΣ",
             ["RecentlyRegisteredMembers"] = "ΝΕΕΣ ΕΓΓΡΑΦΕΣ ΤΕΛΕΥΤΑΙΩΝ {0} ΜΗΝΩΝ",
@@ -76,8 +106,8 @@ namespace SYLOGOS.Util
             ["MembersWithCertificate"] = "ΜΕΛΗ ΜΕ ΠΙΣΤΟΠΟΙΗΤΙΚΟ",
             ["MembersWithoutCertificate"] = "ΜΕΛΗ ΧΩΡΙΣ ΠΙΣΤΟΠΟΙΗΤΙΚΟ",
             ["MembersRegisteredInYear"] = "ΜΕΛΗ ΕΓΓΕΓΡΑΜΜΕΝΑ ΤΟ {0}",
-            ["PickRandomMembers"] = "ΤΥΧΑΙΑ ΕΠΙΛΟΓΗ {0} ΜΕΛΩΝ",
-            ["PickRandomMembersByCity"] = "ΤΥΧΑΙΑ ΕΠΙΛΟΓΗ {0} ΜΕΛΩΝ ΑΠΟ ΠΟΛΗ {1}"
+            ["PickRandomMembers"] = "{0} ({1} ΜΕΛΗ)",
+            ["PickRandomMembersByCity"] = "{0} ({1} ΜΕΛΗ ΑΠΟ ΠΟΛΗ {2})"
         };
 
 
@@ -87,17 +117,29 @@ namespace SYLOGOS.Util
             {
                 try
                 {
+                    // Handle PickRandomMembers with fallback
+                    if (key == "PickRandomMembers" && args.Length == 2)
+                    {
+                        string title = string.IsNullOrWhiteSpace(args[0]?.ToString()) ? "ΤΥΧΑΙΑ ΕΠΙΛΟΓΗ" : args[0].ToString()!;
+                        return string.Format("{0} ({1} ΜΕΛΗ)", title, args[1]);
+                    }
+
+                    if (key == "PickRandomMembersByCity" && args.Length == 3)
+                    {
+                        string title = string.IsNullOrWhiteSpace(args[0]?.ToString()) ? "ΤΥΧΑΙΑ ΕΠΙΛΟΓΗ" : args[0].ToString()!;
+                        return string.Format("{0} ({1} ΜΕΛΗ ΑΠΟ ΠΟΛΗ {2})", title, args[1], args[2]);
+                    }
+
                     return string.Format(template, args);
                 }
                 catch
                 {
-                    return template; // fallback if format fails
+                    return template;
                 }
             }
 
-            return key.Replace('_', ' ').ToUpperInvariant(); // fallback
+            return key.Replace('_', ' ').ToUpperInvariant();
         }
-
 
     }
 }

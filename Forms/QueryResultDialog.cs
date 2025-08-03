@@ -71,6 +71,8 @@ namespace SYLOGOS.Forms
                 DefaultCellStyle = { WrapMode = DataGridViewTriState.True },
                 AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells
             };
+            _grid.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            _grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
 
             _grid.DataBindingComplete += (_, _) =>
             {

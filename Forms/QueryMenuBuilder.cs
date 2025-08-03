@@ -143,12 +143,14 @@ namespace SYLOGOS
 
                 if (input != null &&
                     input["Count"] is decimal n &&
-                    input["Title"] is string title &&
                     input["Exclude Unpaid?"] is bool excludeUnpaid)
                 {
+                    string rawTitle = input.TryGetValue("Title", out object? t) ? t?.ToString() ?? "" : "";
+                    string title = string.IsNullOrWhiteSpace(rawTitle) ? "ΤΥΧΑΙΑ ΕΠΙΛΟΓΗ" : rawTitle.Trim();
+
                     using AppDbContext db = new();
                     List<Member> results = Queries.PickRandomMembers(db, (int)n, excludeUnpaid);
-                    QueryResultDialog.Show(mainForm, results, "PickRandomMembers", null, (int)n);
+                    QueryResultDialog.Show(mainForm, results, "PickRandomMembers", null, title, (int)n);
                 }
             }));
 
@@ -162,12 +164,14 @@ namespace SYLOGOS
                 if (input != null &&
                     input["City"] is string city &&
                     input["Count"] is decimal n &&
-                    input["Title"] is string title &&
                     input["Exclude Unpaid?"] is bool excludeUnpaid)
                 {
+                    string rawTitle = input.TryGetValue("Title", out object? t) ? t?.ToString() ?? "" : "";
+                    string title = string.IsNullOrWhiteSpace(rawTitle) ? "ΤΥΧΑΙΑ ΕΠΙΛΟΓΗ" : rawTitle.Trim();
+
                     using AppDbContext db = new();
                     List<Member> results = Queries.PickRandomMembersByCity(db, city, (int)n, excludeUnpaid);
-                    QueryResultDialog.Show(mainForm, results, "PickRandomMembersByCity", null, (int)n, city);
+                    QueryResultDialog.Show(mainForm, results, "PickRandomMembersByCity", null, title, (int)n, city);
                 }
             }));
         }
