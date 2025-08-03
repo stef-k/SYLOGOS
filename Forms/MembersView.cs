@@ -286,6 +286,7 @@ namespace SYLOGOS.Forms
             // Members
             memberContextMenu = new ContextMenuStrip();
             memberContextMenu.Items.Add("📥 Export All Members + Children", null, (_, _) => ExportAllMembersWithChildren());
+            memberContextMenu.Items.Add("🪪 Εκτύπωση Κάρτας Μέλους", null, (_, _) => ExportSelectedMemberCard());
             memberGrid.ContextMenuStrip = memberContextMenu;
 
             // Memberships
@@ -517,12 +518,20 @@ namespace SYLOGOS.Forms
             {
                 DataGridView grid = childMembershipPanel.membershipGrid;
 
-                if (e.RowIndex >= 0 &&
-                    grid.Columns[e.ColumnIndex].DataPropertyName == "Year" &&
-                    grid.Rows[e.RowIndex].DataBoundItem is Membership ms &&
-                    ms.ReceiptNumber != null)
+                try
                 {
-                    e.ToolTipText = "Η χρονιά δεν μπορεί να αλλάξει — έχει εκδοθεί απόδειξη.";
+                    if (e.RowIndex >= 0 &&
+                        grid.Columns[e.ColumnIndex].DataPropertyName == "Year" &&
+                        grid.Rows[e.RowIndex].DataBoundItem is Membership ms &&
+                        ms.ReceiptNumber != null)
+                    {
+                        e.ToolTipText = "Η χρονιά δεν μπορεί να αλλάξει — έχει εκδοθεί απόδειξη.";
+                    }
+                }
+                catch (Exception)
+                {
+
+                    // Ignore any exceptions here, just in case
                 }
             };
 
@@ -1370,6 +1379,30 @@ namespace SYLOGOS.Forms
             MessageBox.Show($"Receipt exported to:\n{path}", "Export Complete");
         }
 
+        private void ExportSelectedMemberCard()
+        {
+            if (currentMember == null)
+            {
+                MessageBox.Show("Επιλέξτε μέλος.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using AppDbContext db = new();
+            AppSetting? settings = db.Settings.FirstOrDefault();
+            if (settings == null)
+            {
+                MessageBox.Show("Δεν βρέθηκαν ρυθμίσεις συλλόγου.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            string fileName = $"MemberCard_{ExportHelper.SanitizeFileName(currentMember.FullName)}.pdf";
+            string path = Path.Combine(ExportHelper.GetDesktopPath(), fileName);
+
+            MemberCardDocument doc = new(currentMember, settings);
+            doc.GeneratePdf(path);
+
+            MessageBox.Show($"Η κάρτα εξήχθη στο:\n{path}", "Ολοκλήρωση");
+        }
 
 
         /// <summary>
