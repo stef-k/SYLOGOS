@@ -1,8 +1,4 @@
 ﻿using ClosedXML.Excel;
-using QuestPDF.Drawing;
-using QuestPDF.Fluent;
-using QuestPDF.Infrastructure;
-using SYLOGOS.Models;
 
 namespace SYLOGOS.Util
 {
@@ -15,7 +11,7 @@ namespace SYLOGOS.Util
             Dictionary<string, Func<T, object?>> columns)
         {
             using XLWorkbook workbook = new XLWorkbook();
-            IXLWorksheet sheet = workbook.Worksheets.Add("Export");
+            IXLWorksheet sheet = workbook.Worksheets.Add("ΕΞΑΓΩΓΗ");
 
             int colIndex = 1;
             foreach (string header in columns.Keys)
@@ -50,54 +46,5 @@ namespace SYLOGOS.Util
             workbook.SaveAs(filePath);
         }
 
-        public static void ExportMembershipReceipt(Member member, Membership membership, string filePath)
-        {
-            ReceiptDocument document = new ReceiptDocument(member, membership);
-            document.GeneratePdf(filePath);
-        }
-
-        private class ReceiptDocument : IDocument
-        {
-            private readonly Member _member;
-            private readonly Membership _membership;
-
-            public ReceiptDocument(Member member, Membership membership)
-            {
-                _member = member;
-                _membership = membership;
-            }
-
-            public DocumentMetadata GetMetadata()
-            {
-                return DocumentMetadata.Default;
-            }
-
-            public void Compose(IDocumentContainer container)
-            {
-                container.Page(page =>
-                {
-                    page.Margin(40);
-                    page.Header().Element(header =>
-                    {
-                        header.AlignCenter().Text("SYLOGOS Membership Receipt").Bold().FontSize(16);
-                    });
-
-                    page.Content().Column(col =>
-                    {
-                        col.Item().Text($"Date: {DateTime.Now:dd/MM/yyyy}");
-                        col.Item().Text($"Member #: {_member.MemberNumber}");
-                        col.Item().Text($"Name: {_member.FullName}");
-                        col.Item().Text($"City: {_member.City}");
-                        col.Item().Text($"Year: {_membership.Year}");
-                        col.Item().Text($"Amount: {_membership.Amount:C2}");
-                    });
-
-                    page.Footer().Element(footer =>
-                    {
-                        footer.AlignCenter().Text("Thank you for your support.");
-                    });
-                });
-            }
-        }
     }
 }

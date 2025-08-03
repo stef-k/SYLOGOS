@@ -1,6 +1,4 @@
-﻿using SYLOGOS.Models;
-
-namespace SYLOGOS.Util;
+﻿namespace SYLOGOS.Util;
 public static class ExportHelper
 {
     private static readonly string[] Units = { "", "ένα", "δύο", "τρία", "τέσσερα", "πέντε", "έξι", "επτά", "οκτώ", "εννέα" };
@@ -96,20 +94,13 @@ public static class ExportHelper
     {
         string path = Path.Combine(GetDesktopPath(), SanitizeFileName(title) + ".xlsx");
         ExportService.ExportToExcel(data, title, path, columns);
-        System.Windows.Forms.MessageBox.Show($"Excel exported to:\n{path}", "Export Complete");
+        System.Windows.Forms.MessageBox.Show($"Το Excel αποθηκεύτηκε στο:\n{path}", "Ολοκλήρωση Εξαγωγής");
     }
 
     public static void ExportPdfWithNotice<T>(IEnumerable<T> data, string title, Dictionary<string, Func<T, object?>> columns)
     {
         // PDF table logic removed — we use dedicated documents now
-        System.Windows.Forms.MessageBox.Show("Use a dedicated document class for PDF export.", "Not Implemented");
+        System.Windows.Forms.MessageBox.Show("Χρησιμοποιήστε μια εξειδικευμένη κλάση για εξαγωγή PDF.", "Δεν έχει Υλοποιηθεί");
     }
 
-    public static void ExportMembershipReceiptWithNotice(Member member, Membership membership)
-    {
-        string fileName = $"Receipt_{SanitizeFileName(member.FullName)}_{membership.Year}.pdf";
-        string path = Path.Combine(GetDesktopPath(), fileName);
-        ExportService.ExportMembershipReceipt(member, membership, path);
-        System.Windows.Forms.MessageBox.Show($"Receipt exported to:\n{path}", "Export Complete");
-    }
 }

@@ -30,7 +30,7 @@ namespace SYLOGOS.Forms
 
             Label helpLabel = new Label
             {
-                Text = "Tip: Press F2 or double-click on Date of Birth to use a date picker.",
+                Text = "Βοήθεια: Πατήστε F2 ή διπλό κλικ στην ημερομηνία γεννήσεως για να χρησιμοποιείσετε το εργαλείο επιλογής ημερομηνίας.",
                 Font = new Font("Segoe UI", 8, FontStyle.Italic),
                 ForeColor = Color.DimGray,
                 AutoSize = true
@@ -43,8 +43,8 @@ namespace SYLOGOS.Forms
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 Margin = new Padding(0, 0, 0, 0)
             };
-            btnAddChild = new Button { Text = "➕ Add Child", BackColor = Color.LightGreen, FlatStyle = FlatStyle.Flat, AutoSize = true };
-            btnDeleteChild = new Button { Text = "❌ Delete Selected", BackColor = Color.LightCoral, FlatStyle = FlatStyle.Flat, AutoSize = true };
+            btnAddChild = new Button { Text = "➕ Εισαγωγή Τέκνου", BackColor = Color.RoyalBlue, ForeColor = Color.White, FlatStyle = FlatStyle.Flat, AutoSize = true };
+            btnDeleteChild = new Button { Text = "❌ Διαγραφή Επιλογής", BackColor = Color.Firebrick, ForeColor = Color.White, FlatStyle = FlatStyle.Flat, AutoSize = true };
             childButtons.Controls.Add(btnAddChild);
             childButtons.Controls.Add(btnDeleteChild);
 
@@ -55,10 +55,10 @@ namespace SYLOGOS.Forms
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 AllowUserToAddRows = false
             };
-            childGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Full Name", DataPropertyName = "FullName" });
+            childGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Ονοματεπώνυμο", DataPropertyName = "FullName" });
             CalendarColumn dobColumn = new CalendarColumn
             {
-                HeaderText = "Date of Birth",
+                HeaderText = "Ημερομηνία Γέννησης",
                 DataPropertyName = "DateOfBirth",
                 DefaultCellStyle = new DataGridViewCellStyle { Format = "dd/MM/yyyy" }
             };
@@ -118,8 +118,8 @@ namespace SYLOGOS.Forms
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 Margin = new Padding(0, 0, 0, 0)
             };
-            btnAddMembership = new Button { Text = "➕ Add Payment", BackColor = Color.LightGreen, FlatStyle = FlatStyle.Flat, AutoSize = true };
-            btnDeleteMembership = new Button { Text = "❌ Delete Selected", BackColor = Color.LightCoral, FlatStyle = FlatStyle.Flat, AutoSize = true };
+            btnAddMembership = new Button { Text = "➕ Εισαγωγή Συνδρομής", BackColor = Color.RoyalBlue, ForeColor = Color.White, FlatStyle = FlatStyle.Flat, AutoSize = true };
+            btnDeleteMembership = new Button { Text = "❌ Διαγραφή Επιλογής", BackColor = Color.Firebrick, ForeColor = Color.White, FlatStyle = FlatStyle.Flat, AutoSize = true };
             membershipButtons.Controls.Add(btnAddMembership);
             membershipButtons.Controls.Add(btnDeleteMembership);
 
@@ -134,7 +134,7 @@ namespace SYLOGOS.Forms
 
             membershipGrid.Columns.Add(new DataGridViewTextBoxColumn
             {
-                HeaderText = "Year",
+                HeaderText = "Έτος",
                 DataPropertyName = "Year",
                 DefaultCellStyle = new DataGridViewCellStyle
                 {
@@ -144,7 +144,7 @@ namespace SYLOGOS.Forms
 
             membershipGrid.Columns.Add(new DataGridViewTextBoxColumn
             {
-                HeaderText = "Amount",
+                HeaderText = "Ποσό",
                 DataPropertyName = "Amount",
                 DefaultCellStyle = new DataGridViewCellStyle
                 {
@@ -156,7 +156,7 @@ namespace SYLOGOS.Forms
 
             membershipGrid.Columns.Add(new DataGridViewTextBoxColumn
             {
-                HeaderText = "Receipt #",
+                HeaderText = "Αριθ. Απόδειξης",
                 DataPropertyName = "ReceiptNumber",
                 ValueType = typeof(int?),
                 ReadOnly = true,

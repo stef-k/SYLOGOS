@@ -54,7 +54,7 @@ namespace SYLOGOS.Forms
                 RowCount = 0,
                 AutoSize = true
             };
-            clubTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100));
+            clubTable.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 350));
             clubTable.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
 
             Label clubHeader = new Label
@@ -62,27 +62,27 @@ namespace SYLOGOS.Forms
                 Text = "🏛️ Στοιχεία Συλλόγου",
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+                Font = new Font("Segoe UI", 12, FontStyle.Bold)
             };
             clubTable.RowCount++;
-            clubTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            clubTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             clubTable.Controls.Add(clubHeader, 0, 0);
             clubTable.SetColumnSpan(clubHeader, 2);
 
             void AddClubRow(string label, out TextBox box)
             {
                 clubTable.RowCount++;
-                clubTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+                clubTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
                 clubTable.Controls.Add(new Label { Text = label, TextAlign = ContentAlignment.MiddleRight, Dock = DockStyle.Fill }, 0, clubTable.RowCount - 1);
                 box = new TextBox { Dock = DockStyle.Fill };
                 clubTable.Controls.Add(box, 1, clubTable.RowCount - 1);
             }
 
-            AddClubRow("Club Name:", out txtClubName);
-            AddClubRow("Phone:", out txtPhone);
+            AddClubRow("Ονομασία Συλλόγου:", out txtClubName);
+            AddClubRow("Τηλέφωνο:", out txtPhone);
             AddClubRow("Email:", out txtEmail);
-            AddClubRow("Website:", out txtWebsite);
-            AddClubRow("Address:", out txtAddress);
+            AddClubRow("Ιστοσελίδα:", out txtWebsite);
+            AddClubRow("Διεύθυνση:", out txtAddress);
 
             // Logo row
             clubTable.RowCount++;
@@ -100,21 +100,44 @@ namespace SYLOGOS.Forms
 
             // Upload / Clear buttons
             FlowLayoutPanel logoButtons = new FlowLayoutPanel { Dock = DockStyle.Left, AutoSize = true };
-            btnUpload = new Button { Text = "Upload Logo" };
+            btnUpload = new Button
+            {
+                Text = "Εισαγωγή Λογότυπου",
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                Padding = new Padding(10, 6, 10, 6),
+                Margin = new Padding(5, 0, 5, 0),
+                BackColor = Color.RoyalBlue,
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat
+            };
+            btnUpload.FlatAppearance.BorderSize = 0;
             btnUpload.Click += BtnUpload_Click;
-            btnClearLogo = new Button { Text = "Clear Logo" };
+            btnClearLogo = new Button
+            {
+                Text = "Διαγραφή Λογότυπου",
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                Padding = new Padding(10, 6, 10, 6),
+                Margin = new Padding(5, 0, 5, 0)
+            };
+            btnClearLogo.BackColor = Color.Firebrick;
+            btnClearLogo.ForeColor = Color.White;
+            btnClearLogo.FlatStyle = FlatStyle.Flat;
+            btnClearLogo.FlatAppearance.BorderSize = 0;
             btnClearLogo.Click += (_, _) => logoBox.Image = null;
             logoButtons.Controls.Add(btnUpload);
             logoButtons.Controls.Add(btnClearLogo);
             clubTable.RowCount++;
-            clubTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+            clubTable.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            logoButtons.Margin = new Padding(0, 8, 0, 8);
             clubTable.Controls.Add(new Label(), 0, clubTable.RowCount - 1);
             clubTable.Controls.Add(logoButtons, 1, clubTable.RowCount - 1);
 
             // Receipt start number
             Label lblReceiptStart = new Label
             {
-                Text = "Receipt Start Number:",
+                Text = "Αρχικός Αριθμός Αποδείξεων:",
                 AutoSize = true,
                 TextAlign = ContentAlignment.MiddleRight,
                 Dock = DockStyle.Fill
@@ -169,7 +192,7 @@ namespace SYLOGOS.Forms
                 Text = "⚙️ Ρυθμίσεις Εφαρμογής ",
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleLeft,
-                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+                Font = new Font("Segoe UI", 12, FontStyle.Bold)
             };
             appTable.RowCount++;
             appTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
@@ -179,16 +202,17 @@ namespace SYLOGOS.Forms
             // Dark mode
             appTable.RowCount++;
             appTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-            chkDarkMode = new CheckBox { Text = "Enable Dark Mode", AutoSize = true };
+            chkDarkMode = new CheckBox { Text = "Ενεργοποίηση Σκούρου Θέματος", AutoSize = true };
             appTable.Controls.Add(new Label(), 0, appTable.RowCount - 1);
             appTable.Controls.Add(chkDarkMode, 1, appTable.RowCount - 1);
 
             // UI scale
             appTable.RowCount++;
             appTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-            appTable.Controls.Add(new Label { Text = "UI Scale:", TextAlign = ContentAlignment.MiddleRight, Dock = DockStyle.Fill }, 0, appTable.RowCount - 1);
+            appTable.Controls.Add(new Label { Text = "Μέγεθος Γραμματοσειράς:", TextAlign = ContentAlignment.MiddleRight, Dock = DockStyle.Fill }, 0, appTable.RowCount - 1);
             cmbScale = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Left };
-            cmbScale.Items.AddRange(Enum.GetNames(typeof(UiScaleMode)));
+            cmbScale.Items.Clear();
+            cmbScale.Items.AddRange(new object[] { "Μικρό", "Κανονικό", "Μεγάλο" });
             appTable.Controls.Add(cmbScale, 1, appTable.RowCount - 1);
 
             // Add both tables
@@ -204,9 +228,52 @@ namespace SYLOGOS.Forms
                 Padding = new Padding(0, 10, 0, 0),
                 WrapContents = false
             };
-            btnSave = new Button { Text = "Save Settings", AutoSize = true };
+            btnSave = new Button
+            {
+                Text = "Αποθήκευση Ρυθμίσεων",
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                Padding = new Padding(10, 6, 10, 6),
+                Margin = new Padding(5, 0, 5, 0)
+            };
+            btnSave.BackColor = Color.ForestGreen;
+            btnSave.ForeColor = Color.White;
+            btnSave.FlatStyle = FlatStyle.Flat;
+            btnSave.FlatAppearance.BorderSize = 0;
             btnSave.Click += BtnSave_Click;
+            btnSave.FlatAppearance.BorderSize = 0;
             savePanel.Controls.Add(btnSave);
+
+            Font labelFont = new Font("Segoe UI", 11); // adjust to 12 if needed
+
+            foreach (Control ctl in clubTable.Controls)
+            {
+                if (ctl is Label lbl && !lbl.Font.Bold)  // skip header
+                {
+                    lbl.Font = labelFont;
+                }
+            }
+
+            foreach (Control ctl in appTable.Controls)
+            {
+                if (ctl is Label lbl && !lbl.Font.Bold)  // skip header
+                {
+                    lbl.Font = labelFont;
+                }
+            }
+
+            foreach (Control ctl in appTable.Controls)
+            {
+                if (ctl is Label lbl && !lbl.Font.Bold)
+                {
+                    lbl.Font = labelFont;
+                }
+                else if (ctl is CheckBox cb)
+                {
+                    cb.Font = labelFont;
+                }
+            }
+
 
             Controls.Add(root);
             Controls.Add(savePanel);
@@ -243,9 +310,13 @@ namespace SYLOGOS.Forms
             chkDarkMode.Checked = currentSetting.UseDarkMode;
 
             // Ensure valid enum
-            cmbScale.SelectedItem = Enum.IsDefined(typeof(UiScaleMode), currentSetting.ScaleMode)
-                ? currentSetting.ScaleMode.ToString()
-                : UiScaleMode.Normal.ToString();
+            cmbScale.SelectedItem = currentSetting.ScaleMode switch
+            {
+                UiScaleMode.Small => "Μικρό",
+                UiScaleMode.Normal => "Κανονικό",
+                UiScaleMode.Large => "Μεγάλο",
+                _ => "Κανονικό"
+            };
 
             if (isNew)
             {
@@ -258,7 +329,7 @@ namespace SYLOGOS.Forms
             using OpenFileDialog dialog = new OpenFileDialog
             {
                 Filter = "Image Files|*.jpg;*.png;*.bmp",
-                Title = "Select Club Logo"
+                Title = "Επιλέξτε Λογότυπου Συλλόγου"
             };
 
             if (dialog.ShowDialog() == DialogResult.OK)
@@ -274,7 +345,7 @@ namespace SYLOGOS.Forms
             AppSetting? setting = db.Settings.FirstOrDefault(s => s.Id == currentSetting.Id);
             if (setting == null)
             {
-                MessageBox.Show("Settings record not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Δεν βρέθηκαν αποθηκευμένες ρυθμίσεις.", "Σφαλμα", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -286,8 +357,16 @@ namespace SYLOGOS.Forms
             setting.ClubLogo = logoBox.Image != null ? ConvertImageToBytes(logoBox.Image) : null;
 
             bool darkChanged = setting.UseDarkMode != chkDarkMode.Checked;
-            bool scaleChanged = Enum.TryParse<UiScaleMode>(cmbScale.SelectedItem?.ToString(), out UiScaleMode selectedScale)
-                                && setting.ScaleMode != selectedScale;
+            UiScaleMode selectedScale = cmbScale.SelectedItem?.ToString() switch
+            {
+                "Μικρό" => UiScaleMode.Small,
+                "Κανονικό" => UiScaleMode.Normal,
+                "Μεγάλο" => UiScaleMode.Large,
+                _ => UiScaleMode.Normal
+            };
+
+            bool scaleChanged = setting.ScaleMode != selectedScale;
+
 
             setting.UseDarkMode = chkDarkMode.Checked;
             if (scaleChanged)
@@ -300,8 +379,8 @@ namespace SYLOGOS.Forms
             if (darkChanged || scaleChanged)
             {
                 MessageBox.Show(
-                    "The selected setting(s) require an app restart.\nThe application will now restart.",
-                    "Restart Required",
+                    "Οι επιλεγμένες ρυθμίσεις απαιτούν επανεκκίνηση της εφαρμογής.\nΗ εφαρμογή θα επανεκκίνησει τώρα.",
+                    "Απαιτείται Επανεκκίνηση",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
 
@@ -310,7 +389,7 @@ namespace SYLOGOS.Forms
                 return;
             }
 
-            MessageBox.Show("Settings saved successfully.", "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Οι ρυθμίσεις αποθηκεύτηκαν με επιτυχία.", "Αποθήκευση", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
 

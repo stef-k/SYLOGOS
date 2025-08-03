@@ -8,7 +8,7 @@ namespace SYLOGOS
     {
         public static ToolStripMenuItem Build(MainForm mainForm)
         {
-            ToolStripMenuItem queriesMenu = new("Queries");
+            ToolStripMenuItem queriesMenu = new("ΕΡΩΤΗΜΑΤΑ");
             AddQueryMenuItems(mainForm, queriesMenu);
             return queriesMenu;
         }
@@ -16,7 +16,7 @@ namespace SYLOGOS
 
         public static void AddQueryMenuItems(MainForm mainForm, ToolStripMenuItem queriesMenu)
         {
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Unpaid Members", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Απλήρωτες Συνδρομές", () =>
             {
                 using AppDbContext db = new();
                 int year = DateTime.Now.Year;
@@ -24,37 +24,37 @@ namespace SYLOGOS
                 QueryResultDialog.Show(mainForm, results, "UnpaidMembers", null, year);
             }));
 
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Fully Paid Members", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Πληρωμένες Συνδρομές", () =>
             {
                 using AppDbContext db = new();
                 List<Member> results = Queries.GetFullyPaidMembers(db);
                 QueryResultDialog.Show(mainForm, results, "FullyPaidMembers");
             }));
 
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Partially Paid Members", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Μερικώς Πληρωμένες Συνδρομές", () =>
             {
                 using AppDbContext db = new();
                 List<Member> results = Queries.GetPartiallyPaidMembers(db);
                 QueryResultDialog.Show(mainForm, results, "PartiallyPaidMembers");
             }));
 
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Memberships by Year...", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Συνδρομές ανα Έτος...", () =>
             {
-                Dictionary<string, object?>? input = InputPromptDialog.Show("Enter Year", new[] { "Year" }, new[] { InputType.Numeric });
-                if (input != null && input["Year"] is decimal y)
+                Dictionary<string, object?>? input = InputPromptDialog.Show("Εισάγετε Έτος", new[] { "Έτος" }, new[] { InputType.Numeric });
+                if (input != null && input["Έτος"] is decimal y)
                 {
                     int year = (int)y;
                     using AppDbContext db = new();
                     List<MembershipDisplay> results = Queries.GetMembershipsByYear(db, year);
                     decimal total = results.Sum(r => r.Amount);
-                    QueryResultDialog.Show(mainForm, results, "MembershipsByYear", $"Total: {total:C2}", year);
+                    QueryResultDialog.Show(mainForm, results, "MembershipsByYear", $"Σύνολο: {total:C2}", year);
                 }
             }));
 
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Recently Registered (months)...", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Πρόσφατα Εγγεγραμμένα Μέλη (μήνες)...", () =>
             {
-                Dictionary<string, object?>? input = InputPromptDialog.Show("Months", new[] { "Months" }, new[] { InputType.Numeric });
-                if (input != null && input["Months"] is decimal m)
+                Dictionary<string, object?>? input = InputPromptDialog.Show("Μήνες", new[] { "Μήνες" }, new[] { InputType.Numeric });
+                if (input != null && input["Μήνες"] is decimal m)
                 {
                     using AppDbContext db = new();
                     List<Member> results = Queries.GetRecentlyRegisteredMembers(db, (int)m);
@@ -62,10 +62,10 @@ namespace SYLOGOS
                 }
             }));
 
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Members by City...", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Μέλη ανα Πόλη...", () =>
             {
-                Dictionary<string, object?>? input = InputPromptDialog.Show("Enter City", new[] { "City" }, new[] { InputType.Text });
-                if (input != null && input["City"] is string c)
+                Dictionary<string, object?>? input = InputPromptDialog.Show("Εισαγωγή Πόλης", new[] { "Πόλη" }, new[] { InputType.Text });
+                if (input != null && input["Πόλη"] is string c)
                 {
                     using AppDbContext db = new();
                     List<Member> results = Queries.GetMembersByCity(db, c);
@@ -73,31 +73,31 @@ namespace SYLOGOS
                 }
             }));
 
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Members Missing Email or Phone", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Μέλη Χωρίς Τηλέφωνο ή Email", () =>
             {
                 using AppDbContext db = new();
                 List<Member> results = Queries.GetMembersMissingEmailOrPhone(db);
                 QueryResultDialog.Show(mainForm, results, "MembersMissingEmailOrPhone");
             }));
 
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Members With Certificate", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Μέλη με Πιστοποιητικό Οικ. Κατάστασης", () =>
             {
                 using AppDbContext db = new();
                 List<Member> results = Queries.GetMembersWithCertificate(db);
                 QueryResultDialog.Show(mainForm, results, "MembersWithCertificate");
             }));
 
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Members Without Certificate", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Μέλη Χωρίς Πιστοποιητικό Οικ. Κατάστασης", () =>
             {
                 using AppDbContext db = new();
                 List<Member> results = Queries.GetMembersWithoutCertificate(db);
                 QueryResultDialog.Show(mainForm, results, "MembersWithoutCertificate");
             }));
 
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Members Registered in Year...", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Μέλη Εγγεγραμμένα το Έτος...", () =>
             {
-                Dictionary<string, object?>? input = InputPromptDialog.Show("Enter Year", new[] { "Year" }, new[] { InputType.Numeric });
-                if (input != null && input["Year"] is decimal y)
+                Dictionary<string, object?>? input = InputPromptDialog.Show("Εισαγωγή έτους", new[] { "Έτος" }, new[] { InputType.Numeric });
+                if (input != null && input["Έτος"] is decimal y)
                 {
                     using AppDbContext db = new();
                     List<Member> results = Queries.GetMembersRegisteredInYear(db, (int)y);
@@ -105,10 +105,10 @@ namespace SYLOGOS
                 }
             }));
 
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Children with Birthday on...", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Τέκνα με Γεννέθλια στις...", () =>
             {
-                Dictionary<string, object?>? input = InputPromptDialog.Show("Birthday Date", new[] { "Date" }, new[] { InputType.Date });
-                if (input != null && input["Date"] is DateTime d)
+                Dictionary<string, object?>? input = InputPromptDialog.Show("Είσάγετε Ημερομηνία", new[] { "Ημερομηνία" }, new[] { InputType.Date });
+                if (input != null && input["Ημερομηνία"] is DateTime d)
                 {
                     using AppDbContext db = new();
                     List<ChildBirthdayDisplay> results = Queries.GetChildrenWithBirthday(db, d);
@@ -116,10 +116,10 @@ namespace SYLOGOS
                 }
             }));
 
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Children Aged Between...", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Τέκνα Γεννημένα Μεταξύ...", () =>
             {
-                Dictionary<string, object?>? input = InputPromptDialog.Show("Enter Age Range", new[] { "Min Age", "Max Age" }, new[] { InputType.Numeric, InputType.Numeric });
-                if (input != null && input["Min Age"] is decimal min && input["Max Age"] is decimal max)
+                Dictionary<string, object?>? input = InputPromptDialog.Show("Εισάγετε Εύρος Ηλικίας", new[] { "Κατώτατη Ηλικία", "Ανώτατη Ηλικία" }, new[] { InputType.Numeric, InputType.Numeric });
+                if (input != null && input["Κατώτατη Ηλικία"] is decimal min && input["Ανώτατη Ηλικία"] is decimal max)
                 {
                     using AppDbContext db = new();
                     List<ChildAgedDisplay> results = Queries.GetChildrenAgedBetween(db, (int)min, (int)max);
@@ -127,25 +127,25 @@ namespace SYLOGOS
                 }
             }));
 
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Children per Member Summary", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Τέκνα ανα Μέλος", () =>
             {
                 using AppDbContext db = new();
                 List<ChildrenSummaryDisplay> results = Queries.GetChildrenPerMemberSummary(db);
                 QueryResultDialog.Show(mainForm, results, "ChildrenPerMemberSummary");
             }));
 
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Randomly Pick N Members...", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Τυχαία Επιλογή Αριθμού Μελών...", () =>
             {
                 Dictionary<string, object?>? input = InputPromptDialog.Show(
-                    "Pick Random",
-                    new[] { "Count", "Title", "Exclude Unpaid?" },
+                    "Επιλέξτε Αριθμό Μελών",
+                    new[] { "Αριθμός", "Τίτλος Λοταρίας", "Εξαίρεση Μελών με Απλήρωτη Τρέχουσα Συνδρομή;" },
                     new[] { InputType.Numeric, InputType.Text, InputType.Checkbox });
 
                 if (input != null &&
-                    input["Count"] is decimal n &&
-                    input["Exclude Unpaid?"] is bool excludeUnpaid)
+                    input["Αριθμός"] is decimal n &&
+                    input["Εξαίρεση Μελών με Απλήρωτη Τρέχουσα Συνδρομή;"] is bool excludeUnpaid)
                 {
-                    string rawTitle = input.TryGetValue("Title", out object? t) ? t?.ToString() ?? "" : "";
+                    string rawTitle = input.TryGetValue("Τίτλος Λοταρίας", out object? t) ? t?.ToString() ?? "" : "";
                     string title = string.IsNullOrWhiteSpace(rawTitle) ? "ΤΥΧΑΙΑ ΕΠΙΛΟΓΗ" : rawTitle.Trim();
 
                     using AppDbContext db = new();
@@ -154,19 +154,19 @@ namespace SYLOGOS
                 }
             }));
 
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Randomly Pick N Members by City...", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Τυχαία Επιλογή Αριθμού Μελών ανα Πόλη...", () =>
             {
                 Dictionary<string, object?>? input = InputPromptDialog.Show(
-                    "Pick by City",
-                    new[] { "City", "Count", "Title", "Exclude Unpaid?" },
+                    "Επιλογή Πόλης",
+                    new[] { "Πόλη", "Αριθμός", "Τίτλος Λοταρίας", "Εξαίρεση Μελών με Απλήρωτη Τρέχουσα Συνδρομή;" },
                     new[] { InputType.Text, InputType.Numeric, InputType.Text, InputType.Checkbox });
 
                 if (input != null &&
-                    input["City"] is string city &&
-                    input["Count"] is decimal n &&
-                    input["Exclude Unpaid?"] is bool excludeUnpaid)
+                    input["Πόλη"] is string city &&
+                    input["Αριθμός"] is decimal n &&
+                    input["Εξαίρεση Μελών με Απλήρωτη Τρέχουσα Συνδρομή;"] is bool excludeUnpaid)
                 {
-                    string rawTitle = input.TryGetValue("Title", out object? t) ? t?.ToString() ?? "" : "";
+                    string rawTitle = input.TryGetValue("Τίτλος Λοταρίας", out object? t) ? t?.ToString() ?? "" : "";
                     string title = string.IsNullOrWhiteSpace(rawTitle) ? "ΤΥΧΑΙΑ ΕΠΙΛΟΓΗ" : rawTitle.Trim();
 
                     using AppDbContext db = new();

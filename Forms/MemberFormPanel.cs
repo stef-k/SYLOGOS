@@ -50,30 +50,30 @@ namespace SYLOGOS.Forms
                 };
             }
 
-            formLayout.Controls.Add(MakeLabel("Member Number:"), 0, 0);
+            formLayout.Controls.Add(MakeLabel("Αριθμός Μέλους:"), 0, 0);
             txtMemberNumber = new TextBox { Dock = DockStyle.Fill, ReadOnly = true };
             formLayout.Controls.Add(txtMemberNumber, 1, 0);
 
-            formLayout.Controls.Add(MakeLabel("Registration Date:"), 2, 0);
+            formLayout.Controls.Add(MakeLabel("Ημερομηνία Εγγραφής:"), 2, 0);
             txtRegistrationDate = new TextBox { Dock = DockStyle.Fill, ReadOnly = true };
             formLayout.Controls.Add(txtRegistrationDate, 3, 0);
 
-            formLayout.Controls.Add(MakeLabel("Full Name:"), 0, 1);
+            formLayout.Controls.Add(MakeLabel("Ονοματεπώνυμο:"), 0, 1);
             txtFullName = new TextBox { Dock = DockStyle.Fill };
             txtFullName.TextChanged += (_, _) =>
                 // tell parent view to re-check Save-button state
                 (this.Parent as MembersView)?.UpdateSaveButtonState();
             formLayout.Controls.Add(txtFullName, 1, 1);
 
-            formLayout.Controls.Add(MakeLabel("Spouse Full Name:"), 2, 1);
+            formLayout.Controls.Add(MakeLabel("Ονοματεπώνυμοe Συζύγου:"), 2, 1);
             txtSpouseFullName = new TextBox { Dock = DockStyle.Fill };
             formLayout.Controls.Add(txtSpouseFullName, 3, 1);
 
-            formLayout.Controls.Add(MakeLabel("Member Phone:"), 0, 2);
+            formLayout.Controls.Add(MakeLabel("Τηλέφωνο:"), 0, 2);
             txtMemberPhone = new TextBox { Dock = DockStyle.Fill };
             formLayout.Controls.Add(txtMemberPhone, 1, 2);
 
-            formLayout.Controls.Add(MakeLabel("Spouse Phone:"), 2, 2);
+            formLayout.Controls.Add(MakeLabel("Τηλέφωνο Συζύγου:"), 2, 2);
             txtSpousePhone = new TextBox { Dock = DockStyle.Fill };
             formLayout.Controls.Add(txtSpousePhone, 3, 2);
 
@@ -81,21 +81,21 @@ namespace SYLOGOS.Forms
             txtEmail = new TextBox { Dock = DockStyle.Fill };
             formLayout.Controls.Add(txtEmail, 1, 3);
 
-            formLayout.Controls.Add(MakeLabel("City:"), 2, 3);
+            formLayout.Controls.Add(MakeLabel("Πόλη:"), 2, 3);
             txtCity = new TextBox { Dock = DockStyle.Fill };
             formLayout.Controls.Add(txtCity, 3, 3);
 
-            formLayout.Controls.Add(MakeLabel("Address:"), 0, 4);
+            formLayout.Controls.Add(MakeLabel("Διεύθυνση:"), 0, 4);
             txtAddress = new TextBox { Dock = DockStyle.Fill };
             formLayout.Controls.Add(txtAddress, 1, 4);
 
-            formLayout.Controls.Add(MakeLabel("Family Certificate:"), 2, 4);
+            formLayout.Controls.Add(MakeLabel("Αριθ. Πιστοποιητικού Οικ. Κατ.:"), 2, 4);
             txtCertificateNumber = new TextBox { Dock = DockStyle.Fill };
             formLayout.Controls.Add(txtCertificateNumber, 3, 4);
 
             formLayout.Controls.Add(new Label
             {
-                Text = "Certificate Publisher:",
+                Text = "Εκδότης Πιστοποιητικού Οικ. Κατ.:",
                 AutoSize = false,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.TopRight
@@ -105,7 +105,7 @@ namespace SYLOGOS.Forms
 
             formLayout.Controls.Add(new Label
             {
-                Text = "Notes:",
+                Text = "Σημειώσεις:",
                 AutoSize = false,
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.TopRight
@@ -136,34 +136,48 @@ namespace SYLOGOS.Forms
 
             btnNew = new Button
             {
-                Text = "➕ New",
+                Text = "➕ Νέα Εγγραφή",
                 AutoSize = true,
-                BackColor = Color.LightGreen,
+                BackColor = Color.RoyalBlue,
+                ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat
             };
 
             btnSave = new Button
             {
-                Text = "💾 Save",
+                Text = "💾 Αποθήκευση",
                 AutoSize = true,
-                BackColor = Color.LightBlue,
                 FlatStyle = FlatStyle.Flat,
-                MinimumSize = new Size(80, 30)
+                MinimumSize = new Size(80, 30),
+                BackColor = Color.ForestGreen,
+                ForeColor = Color.White,
+                UseVisualStyleBackColor = false
             };
+
+            btnSave.FlatAppearance.BorderSize = 0;
+            btnSave.FlatAppearance.MouseOverBackColor = Color.ForestGreen;
+            btnSave.FlatAppearance.MouseDownBackColor = Color.DarkGreen;
+
+            // force color reapply
+            btnSave.ForeColor = Color.White;
+            btnSave.Invalidate();
+
 
             btnClear = new Button
             {
-                Text = "🧹 Clear",
+                Text = "🧹 Εκκαθάριση",
                 AutoSize = true,
-                BackColor = Color.LightGray,
+                BackColor = Color.Gainsboro,
+                ForeColor = Color.Black,
                 FlatStyle = FlatStyle.Flat
             };
 
             btnDelete = new Button
             {
-                Text = "❌ Delete",
+                Text = "❌ Διαγραφή",
                 AutoSize = true,
-                BackColor = Color.LightCoral,
+                BackColor = Color.Firebrick,
+                ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat
             };
 
@@ -191,6 +205,7 @@ namespace SYLOGOS.Forms
             buttonPanel.Controls.Add(btnNew);
             buttonPanel.Controls.Add(BoxSpacer(10));
             buttonPanel.Controls.Add(btnSave);
+            btnSave.ForeColor = Color.White;
             buttonPanel.Controls.Add(BoxSpacer(10));
             buttonPanel.Controls.Add(btnClear);
             buttonPanel.Controls.Add(BoxSpacer(10));

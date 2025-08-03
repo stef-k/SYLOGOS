@@ -17,17 +17,18 @@
         {
             if (labels.Length != types.Length)
             {
-                throw new ArgumentException("Labels and types must match in length");
+                throw new ArgumentException("Οι ετικέτες και οι τύποι πρέπει να ταιριάζουν σε μήκος");
             }
 
             Text = title;
-            Width = 400;
+            Width = 500;
             StartPosition = FormStartPosition.CenterParent;
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
             AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            MinimumSize = new Size(650, 250);
 
             TableLayoutPanel layout = new TableLayoutPanel
             {
@@ -43,30 +44,50 @@
 
             for (int i = 0; i < labels.Length; i++)
             {
-                layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+                layout.RowStyles.Add(new RowStyle(SizeType.AutoSize)); // allow height to grow
 
-                Label label = new Label
+                Control input;
+
+                if (types[i] == InputType.Checkbox)
                 {
-                    Text = labels[i] + ":",
-                    TextAlign = ContentAlignment.MiddleRight,
-                    Dock = DockStyle.Fill
-                };
-                layout.Controls.Add(label, 0, i);
+                    CheckBox cb = new CheckBox
+                    {
+                        Text = labels[i],
+                        AutoSize = true,
+                        MaximumSize = new Size(500, 0),
+                        TextAlign = ContentAlignment.MiddleLeft,
+                        Anchor = AnchorStyles.Left
+                    };
+                    input = cb;
+                    _inputs.Add(labels[i], cb);
 
-                Control input = types[i] switch
+                    layout.Controls.Add(cb, 0, i);
+                    layout.SetColumnSpan(cb, 2);
+                }
+                else
                 {
-                    InputType.Numeric => CreateNullableNumericUpDown(),
-                    InputType.Date => new DateTimePicker { Format = DateTimePickerFormat.Short, Dock = DockStyle.Fill },
-                    InputType.Checkbox => new CheckBox { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft },
-                    _ => new TextBox { Dock = DockStyle.Fill }
-                };
+                    Label label = new Label
+                    {
+                        Text = labels[i] + ":",
+                        TextAlign = ContentAlignment.MiddleRight,
+                        Dock = DockStyle.Fill
+                    };
+                    layout.Controls.Add(label, 0, i);
 
-                _inputs.Add(labels[i], input);
-                layout.Controls.Add(input, 1, i);
+                    input = types[i] switch
+                    {
+                        InputType.Numeric => CreateNullableNumericUpDown(),
+                        InputType.Date => new DateTimePicker { Format = DateTimePickerFormat.Short, Dock = DockStyle.Fill },
+                        _ => new TextBox { Dock = DockStyle.Fill }
+                    };
+
+                    _inputs.Add(labels[i], input);
+                    layout.Controls.Add(input, 1, i);
+                }
             }
 
-            Button okButton = new Button { Text = "▶ Run Query", DialogResult = DialogResult.OK, Width = 120 };
-            Button cancelButton = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, Width = 80 };
+            Button okButton = new Button { Text = "▶ Εκτέλεση Ερωτήματος", DialogResult = DialogResult.OK, Width = 120 };
+            Button cancelButton = new Button { Text = "Ακύρωση", DialogResult = DialogResult.Cancel, Width = 80 };
 
             FlowLayoutPanel footer = new FlowLayoutPanel
             {
@@ -99,7 +120,6 @@
             CancelButton = cancelButton;
         }
 
-
         private static Control CreateNullableNumericUpDown()
         {
             NumericUpDown num = new NumericUpDown
@@ -107,14 +127,13 @@
                 Minimum = 0,
                 Maximum = 9999,
                 Dock = DockStyle.Fill,
-                Tag = true // dirty trick to track if user touched it
+                Tag = true
             };
 
             num.Value = 0;
             num.ForeColor = Color.Gray;
-            num.Text = ""; // show blank
+            num.Text = "";
 
-            // Allow backspace/delete to fully clear the field
             num.KeyDown += (s, e) =>
             {
                 if (e.KeyCode == Keys.Back || e.KeyCode == Keys.Delete)
@@ -124,7 +143,6 @@
                 }
             };
 
-            // On first user input, remove gray color
             num.Enter += (_, _) =>
             {
                 if (num.ForeColor == Color.Gray)
@@ -135,7 +153,6 @@
 
             return num;
         }
-
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {

@@ -101,17 +101,17 @@ namespace SYLOGOS.Forms
 
             Label rowCountLabel = new()
             {
-                Text = $"Showing {(bindingSource as System.Collections.IList)?.Count ?? 0} results",
+                Text = $"Εμφανίζονται {(bindingSource as System.Collections.IList)?.Count ?? 0} αποτελέσματα",
                 Dock = DockStyle.Bottom,
                 Height = 24,
                 TextAlign = ContentAlignment.MiddleRight,
                 Padding = new Padding(0, 0, 10, 0),
-                Font = new Font("Segoe UI", 9, FontStyle.Italic),
+                Font = new Font("Segoe UI", 10, FontStyle.Italic),
                 ForeColor = Color.DimGray
             };
 
-            _btnExportExcel = new Button { Text = "Export to Excel", Dock = DockStyle.Left, Width = 120 };
-            _btnLoadSelected = new Button { Text = "Load Selected", Dock = DockStyle.Right, Width = 140 };
+            _btnExportExcel = new Button { Text = "Εξαγωγή σε Excel", Dock = DockStyle.Left, Width = 120 };
+            _btnLoadSelected = new Button { Text = "Φόρτωση Επιλογής", Dock = DockStyle.Right, Width = 140 };
 
             _btnExportExcel.Click += (_, _) => ExportToExcel();
             _btnLoadSelected.Click += (_, _) => TryLoadSelected();
@@ -127,7 +127,7 @@ namespace SYLOGOS.Forms
             buttonPanel.Controls.Add(_btnExportExcel);
             buttonPanel.Controls.Add(_btnLoadSelected);
 
-            Button btnCopy = new() { Text = "Copy", Dock = DockStyle.Left, Width = 100 };
+            Button btnCopy = new() { Text = "Αντιγραφή", Dock = DockStyle.Left, Width = 100 };
             btnCopy.Click += (_, _) => CopySelectedRowToClipboard();
             buttonPanel.Controls.Add(btnCopy);
 
@@ -151,7 +151,7 @@ namespace SYLOGOS.Forms
                     List<object> items = rawList.Cast<object>().ToList();
                     if (items.Count == 0)
                     {
-                        MessageBox.Show("No data to export.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        MessageBox.Show("Δεν υπάρχουν δεδομένα για εξαγωγή.", "Εξαγωγή", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
 
@@ -173,7 +173,7 @@ namespace SYLOGOS.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Export failed:\n" + ex.Message, "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Αποτυχία εξαγωγής:\n" + ex.Message, "Σφάλμα Εξαγωγής", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -215,7 +215,7 @@ namespace SYLOGOS.Forms
                 }
             }
 
-            MessageBox.Show("This result cannot be loaded into the Members view.", "Unsupported", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show("Το αποτέλεσμα δεν γίνεται να φορτωθεί στη φόρμα μελών.", "Δεν υποστηρίζεται", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         private static bool HasMemberNumberProperty(object dataSource)
@@ -232,7 +232,7 @@ namespace SYLOGOS.Forms
         {
             if (results.Count == 0)
             {
-                MessageBox.Show("No results.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Δεν υπάρχουν αποτελέσματα.", "Αποτελέσματα", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 

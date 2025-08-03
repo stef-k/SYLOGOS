@@ -166,7 +166,7 @@ namespace SYLOGOS.Forms
 
             Label filterLabel = new Label
             {
-                Text = "Search / Filter by:",
+                Text = "Αναζήτηση / Φιλτράρισμα με:",
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleRight,
                 AutoSize = true
@@ -179,20 +179,20 @@ namespace SYLOGOS.Forms
             };
             filterMode.Items.AddRange(new object[]
             {
-                "Member Number", "Full Name", "Member Phone", "Spouse Name", "Spouse Phone", "Email", "City",
-                "Registration Year", "Registration Month", "Child Name", "Membership Year",  "Certificate Number"
+                "Αρ. Μέλους", "Ονοματεπώνυμο", "Τηλ. Μέλους", "Όνομα Συζύγου", "Τηλ. Συζύγου", "Email", "Πόλη",
+                "Έτος Εγγραφής", "Μήνας Εγγραφής", "Όνομα Τέκνου", "Έτος Συνδρομής", "Αρ. Πιστοποιητικού"
             });
             filterMode.SelectedIndex = 0;
 
             searchBox = new TextBox
             {
                 Dock = DockStyle.Fill,
-                PlaceholderText = "Search..."
+                PlaceholderText = "Αναζήτηση..."
             };
 
             Button searchBtn = new Button
             {
-                Text = "🔍 Search",
+                Text = "🔍 Αναζήτηση",
                 AutoSize = true,
                 FlatStyle = FlatStyle.Flat,
                 Padding = new Padding(6, 2, 6, 2),
@@ -202,7 +202,7 @@ namespace SYLOGOS.Forms
 
             Button clearBtn = new Button
             {
-                Text = "❌ Clear",
+                Text = "❌ Εκκαθάριση",
                 AutoSize = true,
                 FlatStyle = FlatStyle.Flat,
                 Padding = new Padding(6, 2, 6, 2),
@@ -285,13 +285,13 @@ namespace SYLOGOS.Forms
         {
             // Members
             memberContextMenu = new ContextMenuStrip();
-            memberContextMenu.Items.Add("📥 Export All Members + Children", null, (_, _) => ExportAllMembersWithChildren());
+            memberContextMenu.Items.Add("📥 Εξαγωγή Όλων των Μελών", null, (_, _) => ExportAllMembersWithChildren());
             memberContextMenu.Items.Add("🪪 Εκτύπωση Κάρτας Μέλους", null, (_, _) => ExportSelectedMemberCard());
             memberGrid.ContextMenuStrip = memberContextMenu;
 
             // Memberships
             membershipContextMenu = new ContextMenuStrip();
-            membershipContextMenu.Items.Add("📄 Export Payment Receipt", null, (_, _) => ExportSelectedMembership());
+            membershipContextMenu.Items.Add("📄 Εξαγωγή Απόδειξης Είσπραξης", null, (_, _) => ExportSelectedMembership());
             childMembershipPanel.membershipGrid.ContextMenuStrip = membershipContextMenu;
         }
 
@@ -317,21 +317,21 @@ namespace SYLOGOS.Forms
             ApplyGridStyles(memberGrid);
             DataGridViewTextBoxColumn memberNumberCol = new DataGridViewTextBoxColumn
             {
-                HeaderText = "Member #",
+                HeaderText = "Αριθμός Μέλους",
                 DataPropertyName = "MemberNumber",
                 AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells
             };
             memberGrid.Columns.Add(memberNumberCol);
-            memberGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Full Name", DataPropertyName = "FullName" });
-            memberGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Phone", DataPropertyName = "MemberPhone" });
+            memberGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Ονοματεπώνυμο", DataPropertyName = "FullName" });
+            memberGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Τηλέφωνο", DataPropertyName = "MemberPhone" });
             memberGrid.Columns.Add(new DataGridViewTextBoxColumn
             {
-                HeaderText = "Spouse Name",
+                HeaderText = "Ονοματεπώνυμο Συζύγου",
                 DataPropertyName = "SpouseFullName"
             });
             memberGrid.Columns.Add(new DataGridViewTextBoxColumn
             {
-                HeaderText = "Spouse Phone",
+                HeaderText = "Τηλέφωνο Συζύγου",
                 DataPropertyName = "SpousePhone"
             });
 
@@ -397,7 +397,7 @@ namespace SYLOGOS.Forms
             memberFormPanel.btnClear.Click += (_, _) => ClearSelectedMember();
             childMembershipPanel.btnAddChild.Click += (_, _) =>
             {
-                if (currentMember == null) { MessageBox.Show("Save the member first."); return; }
+                if (currentMember == null) { MessageBox.Show("Πρέπει να αποθηκεύσετε το μέλος πρώτα."); return; }
                 children.Add(new Child { FullName = "", DateOfBirth = DateTime.Today });
                 childMembershipPanel.childGrid.DataSource = children;
                 UpdateDetailCounts();
@@ -415,7 +415,7 @@ namespace SYLOGOS.Forms
             {
                 if (currentMember == null)
                 {
-                    MessageBox.Show("Save the member first.");
+                    MessageBox.Show("Πρέπει να αποθηκεύσετε το μέλος πρώτα.");
                     return;
                 }
 
@@ -431,7 +431,7 @@ namespace SYLOGOS.Forms
                     newYear++;
                     if (newYear > defaultYear + 10)
                     {
-                        MessageBox.Show("Cannot add more payments — too many future entries.", "Limit Reached");
+                        MessageBox.Show("Αδυναμία εισαγωγής πληρωμής — πάρα πολλές μελλοντικές εισαγωγές.", "Εξάντληση Ορίου");
                         return;
                     }
                 }
@@ -608,7 +608,7 @@ namespace SYLOGOS.Forms
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Could not open email client:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"Αδυναμία εκτέλεσης προγράμματος Email:\n{ex.Message}", "Σφάλμα", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
@@ -664,46 +664,46 @@ namespace SYLOGOS.Forms
                     string f = filter.ToUpperInvariant();
                     switch (mode)
                     {
-                        case "Full Name":
+                        case "Ονοματεπώνυμο":
                             query = query.Where(m => m.FullName.ToUpper().Contains(f));
                             break;
-                        case "Spouse Name":
+                        case "Όνομα Συζύγου":
                             query = query.Where(m => (m.SpouseFullName ?? "").ToUpper().Contains(f));
                             break;
-                        case "Member Phone":
+                        case "Τηλ. Μέλους":
                             query = query.Where(m => (m.MemberPhone ?? "").Contains(filter));
                             break;
-                        case "Spouse Phone":
+                        case "Τηλ. Συζύγου":
                             query = query.Where(m => (m.SpousePhone ?? "").Contains(filter));
                             break;
                         case "Email":
                             query = query.Where(m => (m.Email ?? "").ToUpper().Contains(f));
                             break;
-                        case "City":
+                        case "Πόλη":
                             query = query.Where(m => (m.City ?? "").ToUpper().Contains(f));
                             break;
-                        case "Registration Year":
+                        case "Έτος Εγγραφής":
                             if (int.TryParse(filter, out int year))
                             {
                                 query = query.Where(m => m.RegistrationDate.HasValue && m.RegistrationDate.Value.Year == year);
                             }
                             break;
-                        case "Registration Month":
+                        case "Μήνας Εγγραφής":
                             if (int.TryParse(filter, out int month) && month is >= 1 and <= 12)
                             {
                                 query = query.Where(m => m.RegistrationDate.HasValue && m.RegistrationDate.Value.Month == month);
                             }
                             break;
-                        case "Child Name":
+                        case "Όνομα Τέκνου":
                             query = query.Where(m => m.Children.Any(c => c.FullName.ToUpper().Contains(f)));
                             break;
-                        case "Membership Year":
+                        case "Έτος Συνδρομής":
                             if (int.TryParse(filter, out int y))
                             {
                                 query = query.Where(m => m.Memberships.Any(ms => ms.Year == y));
                             }
                             break;
-                        case "Certificate Number":
+                        case "Αρ. Πιστοποιητικού":
                             query = query.Where(m => (m.CertificateNumber ?? "").ToUpper().Contains(f));
                             break;
                         default: // "MemberNumber" exact  match only
@@ -757,7 +757,7 @@ namespace SYLOGOS.Forms
                     }));
                 }
 
-                resultsLabel.Text = list.Count > 0 ? $"Results: {list.Count}" : "No matching results found.";
+                resultsLabel.Text = list.Count > 0 ? $"Αποτελέσματα: {list.Count}" : "Δεν βρέθηκαν αποτελέσματα.";
 
                 if (memberGrid.Rows.Count > 0)
                 {
@@ -774,11 +774,26 @@ namespace SYLOGOS.Forms
                         {
                             bool match = modeKey switch
                             {
-                                "Full Name" => m.FullName.ToUpper().Contains(highlight),
-                                "Spouse Name" => (m.SpouseFullName ?? "").ToUpper().Contains(highlight),
-                                "Phone" => (m.MemberPhone ?? "").Contains(filter) || (m.SpousePhone ?? "").Contains(filter),
-                                "Email" => (m.Email ?? "").ToUpper().Contains(highlight),
-                                "City" => (m.City ?? "").ToUpper().Contains(highlight),
+                                "Αρ. Μέλους" => m.MemberNumber.ToString() == highlight,
+
+                                "Ονοματεπώνυμο" => m.FullName?.ToUpper().Contains(highlight) == true,
+
+                                "Όνομα Συζύγου" => (m.SpouseFullName ?? "")
+                                                       .ToUpper()
+                                                       .Contains(highlight),
+
+                                "Τηλ. Μέλους" => (m.MemberPhone ?? "").Contains(filter),
+
+                                "Τηλ. Συζύγου" => (m.SpousePhone ?? "").Contains(filter),
+
+                                "Email" => (m.Email ?? "")
+                                                       .ToUpper()
+                                                       .Contains(highlight),
+
+                                "Πόλη" => (m.City ?? "")
+                                                       .ToUpper()
+                                                       .Contains(highlight),
+
                                 _ => false
                             };
 
@@ -820,8 +835,8 @@ namespace SYLOGOS.Forms
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    $"Failed to load members:\n{ex.Message}",
-                    "Load Error",
+                    $"Αδυναμία φόρτωσης μελών:\n{ex.Message}",
+                    "Σφάλμα Φόρτωσης",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
@@ -936,10 +951,10 @@ namespace SYLOGOS.Forms
             {
                 if (currentMember == null)
                 {
-                    MessageBox.Show("No member selected.", "Delete Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Δεν έχει επιλεγεί μέλος.", "Σφάλμα Διαγραφής", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
-                if (MessageBox.Show("Delete this member and all related data?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                if (MessageBox.Show("Να διαγραφεί αυτό το μέλος;", "Επιβεβαίωση Διαγραφής", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                 {
                     return;
                 }
@@ -955,8 +970,8 @@ namespace SYLOGOS.Forms
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "An error occurred while deleting:\n" + ex.Message,
-                    "Error",
+                    "Προέκυψε σφάλμα κατά τη διαγραφή:\n" + ex.Message,
+                    "Σφάλμα Διαγραφής",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
@@ -979,20 +994,20 @@ namespace SYLOGOS.Forms
 
                     if (string.IsNullOrEmpty(name))
                     {
-                        childErrors.Add($"Child row {i + 1}: Name is required");
+                        childErrors.Add($"Γραμμή {i + 1}: Το όνομα απαιτείται");
                         childMembershipPanel.childGrid.Rows[i].DefaultCellStyle.BackColor = Color.LightCoral;
                         rowError = true;
                     }
                     else if (!seenNames.Add(name))
                     {
-                        childErrors.Add($"Child row {i + 1}: Duplicate name '{name}'");
+                        childErrors.Add($"Γραμμή {i + 1}: Διπλότυπο όνομα '{name}'");
                         childMembershipPanel.childGrid.Rows[i].DefaultCellStyle.BackColor = Color.LightCoral;
                         rowError = true;
                     }
 
                     if (c.DateOfBirth.Year < 1900)
                     {
-                        childErrors.Add($"Child row {i + 1}: Invalid birth year '{c.DateOfBirth:yyyy}'");
+                        childErrors.Add($"Γραμμή {i + 1}: Λάθος ημερομηνίας γεννήσεως '{c.DateOfBirth:yyyy}'");
                         childMembershipPanel.childGrid.Rows[i].DefaultCellStyle.BackColor = Color.LightCoral;
                         rowError = true;
                     }
@@ -1013,19 +1028,19 @@ namespace SYLOGOS.Forms
 
                     if (!seenYears.Add(m.Year))
                     {
-                        membershipErrors.Add($"Payment row {i + 1}: Duplicate year {m.Year}");
+                        membershipErrors.Add($"Γραμμή {i + 1}: Διπλότυπη χρονιά {m.Year}");
                         childMembershipPanel.membershipGrid.Rows[i].DefaultCellStyle.BackColor = Color.LightCoral;
                         rowError = true;
                     }
                     if (m.Year < 1900 || m.Year > DateTime.Now.Year + 1)
                     {
-                        membershipErrors.Add($"Payment row {i + 1}: Year {m.Year} out of range");
+                        membershipErrors.Add($"Γραμμή {i + 1}: Το έτος {m.Year} είναι εκτός ορίων");
                         childMembershipPanel.membershipGrid.Rows[i].DefaultCellStyle.BackColor = Color.LightCoral;
                         rowError = true;
                     }
                     if (m.Amount < 0)
                     {
-                        membershipErrors.Add($"Payment row {i + 1}: Amount cannot be negative");
+                        membershipErrors.Add($"Γραμμή {i + 1}: Το ποσό δεν μπορεί να είναι αρνητικός αριθμός");
                         childMembershipPanel.membershipGrid.Rows[i].DefaultCellStyle.BackColor = Color.LightCoral;
                         rowError = true;
                     }
@@ -1043,8 +1058,8 @@ namespace SYLOGOS.Forms
                     if (duplicateYears.Any())
                     {
                         MessageBox.Show(
-                            $"Each membership year must be unique. Duplicates found for: {string.Join(", ", duplicateYears)}",
-                            "Duplicate Years",
+                            $"Κάθε πληρωμή συνδρομής πρέπει να είναι μοναδική για το έτος. Βρέθηκαν διπλότυπα για: {string.Join(", ", duplicateYears)}",
+                            "Διπλότυπα Έτη",
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Warning);
 
@@ -1058,9 +1073,9 @@ namespace SYLOGOS.Forms
                 if (allErrors.Any())
                 {
                     MessageBox.Show(
-                        "Please correct the following errors before saving:\n\n" +
+                        "Παρακαλώ διορθώστε τα παρακάτω σφάλματα πριν την αποθήκευση:\n\n" +
                         string.Join("\n", allErrors),
-                        "Validation Errors",
+                        "Σφάλματα Δεδομένων",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Warning);
                     return;
@@ -1070,7 +1085,7 @@ namespace SYLOGOS.Forms
                 // Basic Full Name guard
                 if (string.IsNullOrWhiteSpace(memberFormPanel.txtFullName.Text))
                 {
-                    MessageBox.Show("Full Name is required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Το Ονοματεπώνυμο είναι υποχρεωτικό.", "Σφάλμα Δεδομένων", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
@@ -1089,8 +1104,8 @@ namespace SYLOGOS.Forms
                     if (attempts == 10)
                     {
                         MessageBox.Show(
-                            "Could not generate a unique Member Number. Please try again.",
-                            "Error",
+                            "Αποτυχία δημιουργίας μοναδικού Αριθμού Μέλους. Παρακαλω δοκιμάστε πάλι.",
+                            "Σφάλμα",
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Error);
                         return;
@@ -1152,9 +1167,9 @@ namespace SYLOGOS.Forms
                     if (ms.ReceiptNumber != null && ms.ReceiptYear != ms.Year)
                     {
                         MessageBox.Show(
-                            $"Cannot change the payment year for a saved receipt.\n" +
-                            $"Receipt #{ms.ReceiptNumber} is already issued for {ms.ReceiptYear}.",
-                            "Receipt Already Issued",
+                            $"Δεν είναι δυνατή η αλλαγή του έτους πληρωμής για μια αποθηκευμένη απόδειξη.\n" +
+                            $"Η απόδειξη #{ms.ReceiptNumber} έχει είδη εκδοθεί για το έτος {ms.ReceiptYear}.",
+                            "Η απόδειξη έχει ήδη εκδοθεί",
                             MessageBoxButtons.OK,
                             MessageBoxIcon.Warning);
                         return;
@@ -1168,28 +1183,23 @@ namespace SYLOGOS.Forms
 
                     if (isPreview)
                     {
-                        using (AppDbContext db2 = new AppDbContext())
+                        using AppDbContext db2 = new AppDbContext();
+                        ReceiptSequence? seq = db2.ReceiptSequences.FirstOrDefault(r => r.Year == year);
+                        if (seq == null)
                         {
-                            ReceiptSequence? seq = db2.ReceiptSequences.FirstOrDefault(r => r.Year == year);
-                            if (seq == null)
-                            {
-                                int start = db2.Settings.FirstOrDefault()?.ReceiptStartNumber ?? 1;
-                                seq = new ReceiptSequence { Year = year, LastIssuedNumber = start - 1 };
-                                db2.ReceiptSequences.Add(seq);
-                            }
-                            else
-                            {
-                                db2.Entry(seq).State = EntityState.Modified;
-                            }
-
-                            seq.LastIssuedNumber++;
-                            db2.SaveChanges();
-                            finalReceiptNumber = seq.LastIssuedNumber;
+                            int start = db2.Settings.FirstOrDefault()?.ReceiptStartNumber ?? 1;
+                            seq = new ReceiptSequence { Year = year, LastIssuedNumber = start - 1 };
+                            db2.ReceiptSequences.Add(seq);
+                        }
+                        else
+                        {
+                            db2.Entry(seq).State = EntityState.Modified;
                         }
 
-                        MessageBox.Show(
-                            $"Saved ReceiptSequence for {year}\nNow LastIssuedNumber = {finalReceiptNumber}",
-                            "Debug ReceiptSequence");
+                        seq.LastIssuedNumber++;
+                        db2.SaveChanges();
+                        finalReceiptNumber = seq.LastIssuedNumber;
+
                     }
 
                     Membership newMs = new()
@@ -1213,8 +1223,8 @@ namespace SYLOGOS.Forms
             {
                 string message = ex.InnerException?.Message ?? ex.Message;
                 MessageBox.Show(
-                    "An error occurred while saving:\n" + message,
-                    "Error",
+                    "Παρουσιάστηκε σφάλμα κατά την αποθήκευση:\n" + message,
+                    "Σφάλμα Αποθήκευσης",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
@@ -1275,11 +1285,11 @@ namespace SYLOGOS.Forms
         {
             if (childMembershipPanel.Controls.Find("childrenTitleLabel", true).FirstOrDefault() is Label c)
             {
-                c.Text = $"👶 Children ({children.Count})";
+                c.Text = $"👶 Τέκνα ({children.Count})";
             }
             if (childMembershipPanel.Controls.Find("membershipTitleLabel", true).FirstOrDefault() is Label m)
             {
-                m.Text = $"💳 Membership Payments ({memberships.Count})";
+                m.Text = $"💳 Συνδρομές Μελών ({memberships.Count})";
             }
         }
 
@@ -1333,14 +1343,14 @@ namespace SYLOGOS.Forms
                 {
                     int index = i;
                     columns[$"ΤΕΚΝΟ {i + 1} ΟΝΟΜΑ"] = m => m.Children.Count > index ? m.Children[index].FullName : "";
-                    columns[$"ΤΕΚΝΟ {i + 1} ΗΜ/ΝΙΑ ΓΕΝΝΗΣΕΩΣ"] = m => m.Children.Count > index ? m.Children[index].DateOfBirth.ToString("yyyy-MM-dd") : "";
+                    columns[$"ΤΕΚΝΟ {i + 1} ΗΜ/ΝΙΑ ΓΕΝΝΗΣΕΩΣ"] = m => m.Children.Count > index ? m.Children[index].DateOfBirth.ToString("dd-MM-yyyy") : "";
                 }
 
-                ExportHelper.ExportExcelWithNotice(members, "All Members and Children", columns);
+                ExportHelper.ExportExcelWithNotice(members, "Όλα τα Μέλη", columns);
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Export failed:\n" + ex.Message, "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Αποτυχία εξαγωγής:\n" + ex.Message, "Σφάλμα Εξαγωγής", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -1356,7 +1366,7 @@ namespace SYLOGOS.Forms
         {
             if (childMembershipPanel.membershipGrid.CurrentRow?.DataBoundItem is not Membership membership)
             {
-                MessageBox.Show("Select a membership payment first.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Επιλέξτε μία συνδρομή πρώτα.", "Εξαγωγή", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -1366,24 +1376,24 @@ namespace SYLOGOS.Forms
 
             if (member == null || settings == null)
             {
-                MessageBox.Show("Could not load member or settings for export.", "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Αδυναμία φόρτωσης μέλους ή ρυθμίσεων που απαιτούνται για την εξαγωγή", "Σφάλμα Εξαγωγής", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            string fileName = $"Receipt_{ExportHelper.SanitizeFileName(member.FullName)}_{membership.Year}.pdf";
+            string fileName = $"Απόδειξη_{ExportHelper.SanitizeFileName(member.FullName)}_{membership.Year}.pdf";
             string path = Path.Combine(ExportHelper.GetDesktopPath(), fileName);
 
             ReceiptDocument doc = new(member, membership, settings);
             doc.GeneratePdf(path);
 
-            MessageBox.Show($"Receipt exported to:\n{path}", "Export Complete");
+            MessageBox.Show($"Η απόδειξη αποθηκεύτηκε στο:\n{path}", "Ολοκήρωση Εξαγωγής");
         }
 
         private void ExportSelectedMemberCard()
         {
             if (currentMember == null)
             {
-                MessageBox.Show("Επιλέξτε μέλος.", "Export", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Επιλέξτε μέλος.", "Εξαγωγή", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -1391,11 +1401,11 @@ namespace SYLOGOS.Forms
             AppSetting? settings = db.Settings.FirstOrDefault();
             if (settings == null)
             {
-                MessageBox.Show("Δεν βρέθηκαν ρυθμίσεις συλλόγου.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Δεν βρέθηκαν ρυθμίσεις συλλόγου.", "Σφάλμα", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            string fileName = $"MemberCard_{ExportHelper.SanitizeFileName(currentMember.FullName)}.pdf";
+            string fileName = $"Κάρτα_Μέλους_{ExportHelper.SanitizeFileName(currentMember.FullName)}.pdf";
             string path = Path.Combine(ExportHelper.GetDesktopPath(), fileName);
 
             MemberCardDocument doc = new(currentMember, settings);

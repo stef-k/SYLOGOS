@@ -15,7 +15,7 @@ namespace SYLOGOS.Forms
             {
                 if (value is not CalendarCell)
                 {
-                    throw new InvalidCastException("Must be a CalendarCell");
+                    throw new InvalidCastException("Πρέπει να είναι κελί ημερολογίου");
                 }
 
                 base.CellTemplate = value;

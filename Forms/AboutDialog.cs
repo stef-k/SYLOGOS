@@ -6,7 +6,7 @@ namespace SYLOGOS.Forms
     {
         public AboutDialog()
         {
-            Text = "About SYLOGOS";
+            Text = "ΠΛΗΡΟΦΟΡΙΕΣ ΕΦΑΡΜΟΓΗΣ";
             StartPosition = FormStartPosition.CenterParent;
             Width = 500;
             Height = 300;
@@ -25,16 +25,16 @@ namespace SYLOGOS.Forms
                 Cursor = Cursors.Arrow,
                 Font = new Font("Segoe UI", 10),
                 Text = """
-SYLOGOS — Family Club Membership Manager
-Version 1.0.0
+ΣΥΛΛΟΓΟΣ — Διαχείριση Μελλών Συλλόγου
+Έκδοση 1.0.0
 
-Developed by Stef Kariotidis
+Ανάπτυξη από Στέφανος Καρυωτίδης
 
-🌐 Website: https://example.com
-📧 Email: mailto:stef@example.com (stef@example.com)
-🐙 GitHub: https://github.com/stefkariotidis/sylogos
+🌐 Website: https://stefk.me
+📧 Email: mailto:stef.kariotidis@mgail.com (stef.kariotidis@mgail.com)
+🐙 GitHub: https://github.com/stef-k/SYLOGOS
 
-This application is open source under the MIT license.
+Η εφαρμογή αυτή είναι ανοιχτού κώδικα υπό την άδεια MIT.
 """
             };
 
@@ -50,7 +50,7 @@ This application is open source under the MIT license.
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Failed to open link:\n" + ex.Message);
+                    MessageBox.Show("Αποτυχία ανοίγματος συνδέσμου:\n" + ex.Message);
                 }
             };
 

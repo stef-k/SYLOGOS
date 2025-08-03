@@ -105,16 +105,6 @@ namespace SYLOGOS.Forms
                 RefreshGridThemes(); // 🔥 ensure all grids restyle after toggle
             };
 
-            // Apply theme AFTER views are created
-            if (useDarkMode)
-            {
-                ApplyDarkTheme(this);
-            }
-            else
-            {
-                ApplyLightTheme(this);
-            }
-
             // Set form scaling and state
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = false;
@@ -123,16 +113,23 @@ namespace SYLOGOS.Forms
             // Create main menu
             menuStrip = new MenuStrip();
             menuStrip.Font = new Font("Segoe UI", 11, FontStyle.Regular);
-            ToolStripMenuItem fileMenu = new ToolStripMenuItem("File");
-            fileMenu.DropDownItems.Add("Exit", null, (_, _) => Application.Exit());
 
-            ToolStripMenuItem viewMenu = new ToolStripMenuItem("View");
-            viewMenu.DropDownItems.Add("Members", null, (_, _) => ShowView(membersView));
-            viewMenu.DropDownItems.Add("Settings", null, (_, _) => ShowView(settingsForm));
+            if (useDarkMode)
+            {
+                menuStrip.Renderer = new DarkMenuRenderer();  // ← custom renderer that fixes white-on-white
+                menuStrip.BackColor = Color.FromArgb(45, 45, 48);
+                menuStrip.ForeColor = Color.White;
+            }
 
-            // HELP
-            ToolStripMenuItem helpMenu = new ToolStripMenuItem("Help");
-            helpMenu.DropDownItems.Add("📘 Help", null, (_, _) =>
+            ToolStripMenuItem fileMenu = new ToolStripMenuItem("ΑΡΧΕΙΟ");
+            fileMenu.DropDownItems.Add("ΕΞΟΔΟΣ", null, (_, _) => Application.Exit());
+
+            ToolStripMenuItem viewMenu = new ToolStripMenuItem("ΠΡΟΒΟΛΗ");
+            viewMenu.DropDownItems.Add("ΜΕΛΗ", null, (_, _) => ShowView(membersView));
+            viewMenu.DropDownItems.Add("ΡΥΘΜΙΣΕΙΣ", null, (_, _) => ShowView(settingsForm));
+
+            ToolStripMenuItem helpMenu = new ToolStripMenuItem("ΒΟΗΘΕΙΑ");
+            helpMenu.DropDownItems.Add("📘 ΒΟΗΘΕΙΑ", null, (_, _) =>
             {
                 string pdfPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "help.pdf");
                 if (File.Exists(pdfPath))
@@ -141,11 +138,11 @@ namespace SYLOGOS.Forms
                 }
                 else
                 {
-                    MessageBox.Show("Help file not found.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show("Δεν βρέθηκε το αρχείο βοήθειας.", "ΣΦΑΛΜΑ", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             });
 
-            helpMenu.DropDownItems.Add("ℹ️ About", null, (_, _) =>
+            helpMenu.DropDownItems.Add("ℹ️ ΠΛΗΡΟΦΟΡΙΕΣ", null, (_, _) =>
             {
                 using AboutDialog about = new();
                 about.ShowDialog(this);
@@ -153,17 +150,15 @@ namespace SYLOGOS.Forms
 
             helpMenu.DropDownItems.Add(new ToolStripSeparator());
 
-            helpMenu.DropDownItems.Add("📄 License", null, (_, _) =>
+            helpMenu.DropDownItems.Add("📄 ΑΔΕΙΑ ΧΡΗΣΗΣ", null, (_, _) =>
             {
                 using LicenseDialog license = new();
                 license.ShowDialog(this);
             });
 
-
             menuStrip.Items.Add(fileMenu);
             menuStrip.Items.Add(viewMenu);
-            // QUERIES
-            menuStrip.Items.Add(QueryMenuBuilder.Build(this));
+            menuStrip.Items.Add(QueryMenuBuilder.Build(this)); // QUERIES
             menuStrip.Items.Add(helpMenu);
 
             // Create layout grid
@@ -184,6 +179,16 @@ namespace SYLOGOS.Forms
             Controls.Add(layout);
 
             MainMenuStrip = menuStrip;
+
+            // Apply theme AFTER views are created
+            if (useDarkMode)
+            {
+                ApplyDarkTheme(this);
+            }
+            else
+            {
+                ApplyLightTheme(this);
+            }
 
             // Show default view
             ShowView(membersView);
@@ -225,6 +230,24 @@ namespace SYLOGOS.Forms
                     dgv.EnableHeadersVisualStyles = false;
                     dgv.Invalidate();
                 }
+                else if (control is MenuStrip menu)
+                {
+                    menu.Renderer = new DarkMenuRenderer();
+                    menu.BackColor = Color.FromArgb(45, 45, 48);  // dark background
+                    menu.ForeColor = Color.White;                 // white text
+
+                    foreach (ToolStripMenuItem item in menu.Items)
+                    {
+                        item.BackColor = Color.FromArgb(45, 45, 48);
+                        item.ForeColor = Color.White;
+                        foreach (ToolStripItem subItem in item.DropDownItems)
+                        {
+                            subItem.BackColor = Color.FromArgb(50, 50, 55);
+                            subItem.ForeColor = Color.White;
+                        }
+                    }
+                }
+
 
                 ApplyDarkTheme(control);
             }
