@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SYLOGOS.Forms;
 using SYLOGOS.Models;
 using System.Globalization;
@@ -16,6 +16,9 @@ namespace SYLOGOS
             Thread.CurrentThread.CurrentCulture = new CultureInfo("el-GR");
             Thread.CurrentThread.CurrentUICulture = new CultureInfo("el-GR");
             Application.EnableVisualStyles();
+            string exeDir = AppDomain.CurrentDomain.BaseDirectory;
+            Directory.SetCurrentDirectory(exeDir); // force working dir
+
             // Ensure database and migrations
             using (AppDbContext context = new AppDbContext())
             {
@@ -26,7 +29,7 @@ namespace SYLOGOS
                 {
                     context.Settings.Add(new AppSetting
                     {
-                        ClubName = "My Club",
+                        ClubName = "Σύλλογος Τριτέκνων Έβρου",
                         Phone = "",
                         Email = "",
                         Website = "",
@@ -43,6 +46,10 @@ namespace SYLOGOS
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
+            using (SplashForm splash = new SplashForm())
+            {
+                splash.ShowDialog();
+            }
             Application.Run(new MainForm());
         }
     }

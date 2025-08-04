@@ -1,6 +1,5 @@
 ﻿using SYLOGOS.Models;
 using System.Diagnostics;
-
 namespace SYLOGOS.Forms
 {
     public partial class MainForm : Form
@@ -19,6 +18,8 @@ namespace SYLOGOS.Forms
         public MainForm()
         {
             MinimumSize = new Size(1120, 800);
+            this.Icon = IconHelper.AppIcon;
+
             InitializeLayout();
         }
 

@@ -53,7 +53,7 @@ namespace SYLOGOS.Forms
                     MessageBox.Show("Αποτυχία ανοίγματος συνδέσμου:\n" + ex.Message);
                 }
             };
-
+            this.Icon = IconHelper.AppIcon;
             Controls.Add(infoBox);
         }
     }

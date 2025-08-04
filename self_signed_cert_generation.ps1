@@ -1,0 +1,1 @@
+New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=SYLOGOS" -CertStoreLocation "cert:\CurrentUser\My" | Export-PfxCertificate -FilePath ".\sylogos.pfx" -Password (ConvertTo-SecureString "sylogosdev2025" -AsPlainText -Force)

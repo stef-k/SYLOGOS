@@ -15,6 +15,7 @@ namespace SYLOGOS.Forms
 
         private QueryResultDialog(MainForm mainForm, object dataSource, Type type, string queryKey, string? summaryText, params object[] args)
         {
+            this.Icon = IconHelper.AppIcon;
             _queryKey = queryKey;
             _queryArgs = args;
             _mainForm = mainForm;

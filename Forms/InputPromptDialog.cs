@@ -118,7 +118,10 @@
 
             AcceptButton = okButton;
             CancelButton = cancelButton;
+
+            this.Icon = this.Icon = IconHelper.AppIcon;
         }
+
 
         private static Control CreateNullableNumericUpDown()
         {

@@ -6,11 +6,16 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>logo.ico</ApplicationIcon>
+    <StartupObject>SYLOGOS.Program</StartupObject>
+    <SatelliteResourceLanguages>en;el</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="help.pdf" />
     <None Remove="LICENSE.txt" />
+    <None Remove="logo.ico" />
+    <None Remove="logo.jpg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,6 +23,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="LICENSE.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="logo.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="logo.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -32,5 +43,16 @@
     </PackageReference>
     <PackageReference Include="QuestPDF" Version="2022.12.4" />
   </ItemGroup>
+
+  <!-- ✅ Post-build EXE signing with .pfx -->
+  <PropertyGroup>
+    <SignToolPath>C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe</SignToolPath>
+  </PropertyGroup>
+
+
+  <Target Name="PostBuildSign" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
+    <Exec Command="&quot;$(SignToolPath)&quot; sign /f &quot;$(ProjectDir)sylogos.pfx&quot; /p sylogosdev2025 /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 &quot;$(TargetPath)&quot;" />
+  </Target>
+
 
 </Project>

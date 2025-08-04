@@ -4,6 +4,7 @@
     {
         public LicenseDialog()
         {
+            this.Icon = IconHelper.AppIcon;
             Text = "License - MIT";
             StartPosition = FormStartPosition.CenterParent;
             Width = 600;
