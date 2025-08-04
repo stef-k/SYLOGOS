@@ -32,7 +32,7 @@ namespace SYLOGOS.Forms
 
 🌐 Website: https://stefk.me
 📧 Email: mailto:stef.kariotidis@mgail.com (stef.kariotidis@mgail.com)
-🐙 GitHub: https://github.com/stef-k/SYLOGOS
+🐙 GitHub: https://github.com/stef-k/SYLOGOS (Για αναφορά σφαλμάτων ή προτάσεις)
 
 Η εφαρμογή αυτή είναι ανοιχτού κώδικα υπό την άδεια MIT.
 """
