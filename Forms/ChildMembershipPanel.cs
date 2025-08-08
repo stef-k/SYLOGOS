@@ -159,7 +159,7 @@ namespace SYLOGOS.Forms
                 HeaderText = "Αριθ. Απόδειξης",
                 DataPropertyName = "ReceiptNumber",
                 ValueType = typeof(int?),
-                ReadOnly = true,
+                ReadOnly = false,
                 DefaultCellStyle = new DataGridViewCellStyle
                 {
                     Alignment = DataGridViewContentAlignment.MiddleCenter,

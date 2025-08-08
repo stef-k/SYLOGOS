@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace SYLOGOS.Forms
 {
     public class MemberFormPanel : Panel
@@ -51,12 +53,41 @@ namespace SYLOGOS.Forms
             }
 
             formLayout.Controls.Add(MakeLabel("Αριθμός Μέλους:"), 0, 0);
-            txtMemberNumber = new TextBox { Dock = DockStyle.Fill, ReadOnly = true };
+            txtMemberNumber = new TextBox { Dock = DockStyle.Fill, ReadOnly = false };
             formLayout.Controls.Add(txtMemberNumber, 1, 0);
 
             formLayout.Controls.Add(MakeLabel("Ημερομηνία Εγγραφής:"), 2, 0);
-            txtRegistrationDate = new TextBox { Dock = DockStyle.Fill, ReadOnly = true };
+            txtRegistrationDate = new TextBox { Dock = DockStyle.Fill, ReadOnly = false };
             formLayout.Controls.Add(txtRegistrationDate, 3, 0);
+
+            txtRegistrationDate.Validating += (s, e) =>
+            {
+                if (string.IsNullOrWhiteSpace(txtRegistrationDate.Text))
+                {
+                    return; // allow empty (null date)
+                }
+
+                if (DateTime.TryParseExact(
+                        txtRegistrationDate.Text.Trim(),
+                        "dd/MM/yyyy",
+                        CultureInfo.InvariantCulture,
+                        DateTimeStyles.None,
+                        out DateTime parsed))
+                {
+                    // rewrite in correct format
+                    txtRegistrationDate.Text = parsed.ToString("dd/MM/yyyy");
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "Η ημερομηνία πρέπει να είναι σε μορφή ΗΗ/ΜΜ/ΕΕΕΕ.",
+                        "Μη έγκυρη ημερομηνία",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    e.Cancel = true; // prevent focus leaving until corrected
+                }
+            };
+
 
             formLayout.Controls.Add(MakeLabel("Ονοματεπώνυμο:"), 0, 1);
             txtFullName = new TextBox { Dock = DockStyle.Fill };
@@ -65,7 +96,7 @@ namespace SYLOGOS.Forms
                 (this.Parent as MembersView)?.UpdateSaveButtonState();
             formLayout.Controls.Add(txtFullName, 1, 1);
 
-            formLayout.Controls.Add(MakeLabel("Ονοματεπώνυμοe Συζύγου:"), 2, 1);
+            formLayout.Controls.Add(MakeLabel("Ονοματεπώνυμο Συζύγου:"), 2, 1);
             txtSpouseFullName = new TextBox { Dock = DockStyle.Fill };
             formLayout.Controls.Add(txtSpouseFullName, 3, 1);
 

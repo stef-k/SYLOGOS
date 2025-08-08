@@ -135,45 +135,45 @@ namespace SYLOGOS.Forms
             clubTable.Controls.Add(logoButtons, 1, clubTable.RowCount - 1);
 
             // Receipt start number
-            Label lblReceiptStart = new Label
-            {
-                Text = "Αρχικός Αριθμός Αποδείξεων:",
-                AutoSize = true,
-                TextAlign = ContentAlignment.MiddleRight,
-                Dock = DockStyle.Fill
-            };
+            //Label lblReceiptStart = new Label
+            //{
+            //    Text = "Αρχικός Αριθμός Αποδείξεων:",
+            //    AutoSize = true,
+            //    TextAlign = ContentAlignment.MiddleRight,
+            //    Dock = DockStyle.Fill
+            //};
 
-            nudReceiptStart = new NumericUpDown
-            {
-                Minimum = 1,
-                Maximum = 99999,
-                Increment = 1,
-                Value = 1,
-                Dock = DockStyle.Fill
-            };
+            //nudReceiptStart = new NumericUpDown
+            //{
+            //    Minimum = 1,
+            //    Maximum = 99999,
+            //    Increment = 1,
+            //    Value = 1,
+            //    Dock = DockStyle.Fill
+            //};
 
-            clubTable.RowCount++;
-            clubTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-            clubTable.Controls.Add(lblReceiptStart, 0, clubTable.RowCount - 1);
-            clubTable.Controls.Add(nudReceiptStart, 1, clubTable.RowCount - 1);
+            //clubTable.RowCount++;
+            //clubTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+            //clubTable.Controls.Add(lblReceiptStart, 0, clubTable.RowCount - 1);
+            //clubTable.Controls.Add(nudReceiptStart, 1, clubTable.RowCount - 1);
 
-            lblReceiptNote = new Label
-            {
-                Text = "Αυτός ο αριθμός χρησιμοποιείται μόνο κατά την έκδοση της πρώτης απόδειξης του έτους. Μόλις εκδοθούν αποδείξεις για το έτος, η τιμή αυτή θα έχει πλέον επίδραση στο επόμενο έτος.",
-                ForeColor = Color.DimGray,
-                Font = new Font("Segoe UI", 11, FontStyle.Italic),
-                AutoSize = false,
-                Dock = DockStyle.Fill,
-                TextAlign = ContentAlignment.TopLeft,
-                Padding = new Padding(0),
-                Margin = new Padding(0, 2, 0, 8),
-                Width = 500 // ⬅ important
-            };
+            //lblReceiptNote = new Label
+            //{
+            //    Text = "Αυτός ο αριθμός χρησιμοποιείται μόνο κατά την έκδοση της πρώτης απόδειξης του έτους. Μόλις εκδοθούν αποδείξεις για το έτος, η τιμή αυτή θα έχει πλέον επίδραση στο επόμενο έτος.",
+            //    ForeColor = Color.DimGray,
+            //    Font = new Font("Segoe UI", 11, FontStyle.Italic),
+            //    AutoSize = false,
+            //    Dock = DockStyle.Fill,
+            //    TextAlign = ContentAlignment.TopLeft,
+            //    Padding = new Padding(0),
+            //    Margin = new Padding(0, 2, 0, 8),
+            //    Width = 500 // ⬅ important
+            //};
 
-            clubTable.RowCount++;
-            clubTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 60)); // for testing
-            clubTable.Controls.Add(lblReceiptNote, 0, clubTable.RowCount - 1);
-            clubTable.SetColumnSpan(lblReceiptNote, 2);
+            //clubTable.RowCount++;
+            //clubTable.RowStyles.Add(new RowStyle(SizeType.Absolute, 60)); // for testing
+            //clubTable.Controls.Add(lblReceiptNote, 0, clubTable.RowCount - 1);
+            //clubTable.SetColumnSpan(lblReceiptNote, 2);
 
 
             // ---- APP SETTINGS ----
@@ -301,7 +301,7 @@ namespace SYLOGOS.Forms
             txtEmail.Text = currentSetting.Email ?? "";
             txtWebsite.Text = currentSetting.Website ?? "";
             txtAddress.Text = currentSetting.Address ?? "";
-            nudReceiptStart.Value = Math.Clamp(currentSetting.ReceiptStartNumber, (int)nudReceiptStart.Minimum, (int)nudReceiptStart.Maximum);
+            //nudReceiptStart.Value = Math.Clamp(currentSetting.ReceiptStartNumber, (int)nudReceiptStart.Minimum, (int)nudReceiptStart.Maximum);
 
             logoBox.Image = currentSetting.ClubLogo != null
                 ? ConvertBytesToImage(currentSetting.ClubLogo)

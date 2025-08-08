@@ -437,33 +437,41 @@ namespace SYLOGOS.Forms
                 }
 
                 // 🧮 Step 3: Preview receipt number
-                int nextNumber;
-                using (AppDbContext db = new AppDbContext())
-                {
-                    ReceiptSequence? seq = db.ReceiptSequences.AsNoTracking().FirstOrDefault(r => r.Year == newYear);
-                    if (seq != null)
-                    {
-                        nextNumber = seq.LastIssuedNumber + 1;
-                    }
-                    else
-                    {
-                        // ✅ Count already-saved + in-session memberships
-                        int saved = db.Memberships.Count(m => m.MemberId == currentMember.Id && m.Year == newYear);
-                        int pending = memberships.Count(m => m.Year == newYear);
-                        int alreadyAdded = saved + pending;
+                //int nextNumber;
+                //using (AppDbContext db = new AppDbContext())
+                //{
+                //    ReceiptSequence? seq = db.ReceiptSequences.AsNoTracking().FirstOrDefault(r => r.Year == newYear);
+                //    if (seq != null)
+                //    {
+                //        nextNumber = seq.LastIssuedNumber + 1;
+                //    }
+                //    else
+                //    {
+                //        // ✅ Count already-saved + in-session memberships
+                //        int saved = db.Memberships.Count(m => m.MemberId == currentMember.Id && m.Year == newYear);
+                //        int pending = memberships.Count(m => m.Year == newYear);
+                //        int alreadyAdded = saved + pending;
 
-                        int start = db.Settings.FirstOrDefault()?.ReceiptStartNumber ?? 1;
-                        nextNumber = start + alreadyAdded;
-                    }
-                }
+                //        int start = db.Settings.FirstOrDefault()?.ReceiptStartNumber ?? 1;
+                //        nextNumber = start + alreadyAdded;
+                //    }
+                //}
 
                 // 🎯 Step 4: Add row
+                //Membership ms = new Membership
+                //{
+                //    Year = newYear,
+                //    Amount = 0,
+                //    ReceiptYear = newYear,
+                //    ReceiptNumber = nextNumber
+                //};
+
                 Membership ms = new Membership
                 {
                     Year = newYear,
                     Amount = 0,
-                    ReceiptYear = newYear,
-                    ReceiptNumber = nextNumber
+                    ReceiptYear = null,
+                    ReceiptNumber = null
                 };
 
                 memberships.Add(ms); // <-- direct binding-safe add
@@ -485,55 +493,55 @@ namespace SYLOGOS.Forms
             };
 
             // 🔒 Prevent editing Year of finalized receipt
-            childMembershipPanel.membershipGrid.CellBeginEdit += (s, e) =>
-            {
-                DataGridView grid = childMembershipPanel.membershipGrid;
-                string colName = grid.Columns[e.ColumnIndex].DataPropertyName;
+            //childMembershipPanel.membershipGrid.CellBeginEdit += (s, e) =>
+            //{
+            //    DataGridView grid = childMembershipPanel.membershipGrid;
+            //    string colName = grid.Columns[e.ColumnIndex].DataPropertyName;
 
-                if (colName == "Year" && grid.Rows[e.RowIndex].DataBoundItem is Membership ms)
-                {
-                    if (ms.ReceiptNumber != null && ms.ReceiptYear != null)
-                    {
-                        MessageBox.Show("Η χρονιά δεν μπορεί να αλλάξει — έχει εκδοθεί απόδειξη.", "🔒", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        e.Cancel = true;
-                    }
-                }
-            };
+            //    if (colName == "Year" && grid.Rows[e.RowIndex].DataBoundItem is Membership ms)
+            //    {
+            //        if (ms.ReceiptNumber != null && ms.ReceiptYear != null)
+            //        {
+            //            MessageBox.Show("Η χρονιά δεν μπορεί να αλλάξει — έχει εκδοθεί απόδειξη.", "🔒", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //            e.Cancel = true;
+            //        }
+            //    }
+            //};
 
-            childMembershipPanel.membershipGrid.CellFormatting += (s, e) =>
-            {
-                DataGridView grid = childMembershipPanel.membershipGrid;
+            //childMembershipPanel.membershipGrid.CellFormatting += (s, e) =>
+            //{
+            //    DataGridView grid = childMembershipPanel.membershipGrid;
 
-                if (e.RowIndex >= 0 &&
-                    grid.Columns[e.ColumnIndex].DataPropertyName == "Year" &&
-                    grid.Rows[e.RowIndex].DataBoundItem is Membership ms &&
-                    ms.ReceiptNumber != null)
-                {
-                    e.Value = $"🔒 {ms.Year}";
-                    e.FormattingApplied = true;
-                }
-            };
+            //    if (e.RowIndex >= 0 &&
+            //        grid.Columns[e.ColumnIndex].DataPropertyName == "Year" &&
+            //        grid.Rows[e.RowIndex].DataBoundItem is Membership ms &&
+            //        ms.ReceiptNumber != null)
+            //    {
+            //        e.Value = $"🔒 {ms.Year}";
+            //        e.FormattingApplied = true;
+            //    }
+            //};
 
-            childMembershipPanel.membershipGrid.CellToolTipTextNeeded += (s, e) =>
-            {
-                DataGridView grid = childMembershipPanel.membershipGrid;
+            //childMembershipPanel.membershipGrid.CellToolTipTextNeeded += (s, e) =>
+            //{
+            //    DataGridView grid = childMembershipPanel.membershipGrid;
 
-                try
-                {
-                    if (e.RowIndex >= 0 &&
-                        grid.Columns[e.ColumnIndex].DataPropertyName == "Year" &&
-                        grid.Rows[e.RowIndex].DataBoundItem is Membership ms &&
-                        ms.ReceiptNumber != null)
-                    {
-                        e.ToolTipText = "Η χρονιά δεν μπορεί να αλλάξει — έχει εκδοθεί απόδειξη.";
-                    }
-                }
-                catch (Exception)
-                {
+            //    try
+            //    {
+            //        if (e.RowIndex >= 0 &&
+            //            grid.Columns[e.ColumnIndex].DataPropertyName == "Year" &&
+            //            grid.Rows[e.RowIndex].DataBoundItem is Membership ms &&
+            //            ms.ReceiptNumber != null)
+            //        {
+            //            e.ToolTipText = "Η χρονιά δεν μπορεί να αλλάξει — έχει εκδοθεί απόδειξη.";
+            //        }
+            //    }
+            //    catch (Exception)
+            //    {
 
-                    // Ignore any exceptions here, just in case
-                }
-            };
+            //        // Ignore any exceptions here, just in case
+            //    }
+            //};
 
 
             ApplyGridStyles(childMembershipPanel.childGrid);
@@ -924,7 +932,7 @@ namespace SYLOGOS.Forms
         private void BtnNew_Click(object? sender, EventArgs e)
         {
             currentMember = null;
-            memberFormPanel.txtMemberNumber.Text = GenerateNextMemberNumber().ToString();
+            memberFormPanel.txtMemberNumber.Text = "";
             memberFormPanel.txtRegistrationDate.Text = "";
             memberFormPanel.txtFullName.Text = "";
             memberFormPanel.txtSpouseFullName.Text = "";
@@ -1089,39 +1097,31 @@ namespace SYLOGOS.Forms
                     return;
                 }
 
-                // --- UNIQUE MEMBER NUMBER GENERATION ---
-                Member member;
-                if (currentMember == null)
+                // --- MANUAL MEMBER NUMBER & REGISTRATION DATE ---
+                if (!int.TryParse(memberFormPanel.txtMemberNumber.Text?.Trim(), out int manualNumber) || manualNumber <= 0)
                 {
-                    int number, attempts = 0;
-                    do
-                    {
-                        number = GenerateNextMemberNumber();
-                        attempts++;
-                    }
-                    while (db.Members.Any(m => m.MemberNumber == number) && attempts < 10);
-
-                    if (attempts == 10)
-                    {
-                        MessageBox.Show(
-                            "Αποτυχία δημιουργίας μοναδικού Αριθμού Μέλους. Παρακαλω δοκιμάστε πάλι.",
-                            "Σφάλμα",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
-                        return;
-                    }
-
-                    member = new Member
-                    {
-                        MemberNumber = number,
-                        RegistrationDate = DateTime.Now
-                    };
+                    MessageBox.Show("Ο Αριθμός Μέλους πρέπει να είναι θετικός ακέραιος.", "Σφάλμα Δεδομένων",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
                 }
-                else
+
+                // must be unique across all members (excluding the one we're editing)
+                bool numberTaken = db.Members.Any(m => m.MemberNumber == manualNumber &&
+                                                       (currentMember == null || m.Id != currentMember.Id));
+                if (numberTaken)
                 {
-                    member = currentMember;
-                    db.Entry(member).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    MessageBox.Show($"Ο Αριθμός Μέλους {manualNumber} υπάρχει ήδη.", "Διπλότυπος Αριθμός",
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
                 }
+
+                Member member = currentMember ?? new Member();
+                member.MemberNumber = manualNumber;
+
+                // registration date: user-edited; allow empty (null) or any valid date
+                member.RegistrationDate = DateTime.TryParse(memberFormPanel.txtRegistrationDate.Text?.Trim(), out DateTime reg) ? reg.Date : null;
+
+                // --- END MANUAL MEMBER NUMBER & REGISTRATION DATE ---
 
                 // Copy fields
                 member.FullName = memberFormPanel.txtFullName.Text.Trim();
@@ -1163,51 +1163,16 @@ namespace SYLOGOS.Forms
 
                 foreach (Membership ms in memberships)
                 {
-                    // 🚨 Prevent user from changing year after receipt is issued
-                    if (ms.ReceiptNumber != null && ms.ReceiptYear != ms.Year)
-                    {
-                        MessageBox.Show(
-                            $"Δεν είναι δυνατή η αλλαγή του έτους πληρωμής για μια αποθηκευμένη απόδειξη.\n" +
-                            $"Η απόδειξη #{ms.ReceiptNumber} έχει είδη εκδοθεί για το έτος {ms.ReceiptYear}.",
-                            "Η απόδειξη έχει ήδη εκδοθεί",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Warning);
-                        return;
-                    }
 
-                    int year = ms.Year;
-                    int finalReceiptNumber = ms.ReceiptNumber ?? 0;
-
-                    bool isPreview = db.Memberships
-                                        .Any(m => m.MemberId == member.Id && m.Year == ms.Year && m.ReceiptNumber == ms.ReceiptNumber) == false;
-
-                    if (isPreview)
-                    {
-                        using AppDbContext db2 = new AppDbContext();
-                        ReceiptSequence? seq = db2.ReceiptSequences.FirstOrDefault(r => r.Year == year);
-                        if (seq == null)
-                        {
-                            int start = db2.Settings.FirstOrDefault()?.ReceiptStartNumber ?? 1;
-                            seq = new ReceiptSequence { Year = year, LastIssuedNumber = start - 1 };
-                            db2.ReceiptSequences.Add(seq);
-                        }
-                        else
-                        {
-                            db2.Entry(seq).State = EntityState.Modified;
-                        }
-
-                        seq.LastIssuedNumber++;
-                        db2.SaveChanges();
-                        finalReceiptNumber = seq.LastIssuedNumber;
-
-                    }
+                    int? mNumber = ms.ReceiptNumber;
+                    int? manualReceiptYear = mNumber.HasValue ? ms.Year : (int?)null;
 
                     Membership newMs = new()
                     {
                         Year = ms.Year,
-                        Amount = ms.Amount,
-                        ReceiptNumber = finalReceiptNumber > 0 ? finalReceiptNumber : null,
-                        ReceiptYear = finalReceiptNumber > 0 ? year : null,
+                        Amount = ms.Amount,                 // 0 allowed
+                        ReceiptNumber = mNumber,       // user-provided
+                        ReceiptYear = manualReceiptYear,    // set iff number exists
                         MemberId = member.Id
                     };
                     db.Memberships.Add(newMs);
