@@ -905,6 +905,9 @@ namespace SYLOGOS.Forms
             memberFormPanel.txtEmail.Text = selected.Email ?? "";
             memberFormPanel.txtCity.Text = selected.City ?? "";
             memberFormPanel.txtAddress.Text = selected.Address ?? "";
+            memberFormPanel.txtCertificateNumber.Text = selected.CertificateNumber ?? "";
+            memberFormPanel.txtCertificatePublisher.Text = selected.CertificatePublisher ?? "";
+            memberFormPanel.txtNotes.Text = selected.Notes ?? "";
 
             children = new SortableBindingList<Child>(db.Children.Where(c => c.MemberId == selected.Id).ToList());
             memberships = new SortableBindingList<Membership>(db.Memberships.Where(m => m.MemberId == selected.Id).ToList());

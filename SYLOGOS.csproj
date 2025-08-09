@@ -16,6 +16,7 @@
     <None Remove="LICENSE.txt" />
     <None Remove="logo.ico" />
     <None Remove="logo.jpg" />
+    <None Remove="sylogos.db" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,6 +43,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="QuestPDF" Version="2022.12.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="sylogos.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <!-- ✅ Post-build EXE signing with .pfx -->

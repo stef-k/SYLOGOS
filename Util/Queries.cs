@@ -71,21 +71,12 @@ namespace SYLOGOS.Util
 
             return db.Members
                 .Include(m => m.Memberships)
-                .Where(m => m.RegistrationDate.HasValue && m.Memberships.Count > 0)
-                .AsEnumerable()
-                .Where(m =>
-                {
-                    int startYear = m.RegistrationDate!.Value.Year;
-                    IEnumerable<int> expectedYears = Enumerable.Range(startYear, currentYear - startYear + 1);
-
-                    HashSet<int> paidYears = m.Memberships
-                        .Where(ms => ms.ReceiptNumber != null && ms.ReceiptYear == ms.Year)
-                        .Select(ms => ms.Year)
-                        .ToHashSet();
-
-                    return expectedYears.All(y => paidYears.Contains(y));
-                })
+                .Where(m => m.Memberships.Any(ms =>
+                    ms.Year == currentYear &&
+                    ms.ReceiptNumber != null &&
+                    ms.ReceiptYear == currentYear))
                 .OrderBy(m => m.FullName)
+                .AsNoTracking()
                 .ToList();
         }
 

@@ -16,7 +16,7 @@ namespace SYLOGOS
 
         public static void AddQueryMenuItems(MainForm mainForm, ToolStripMenuItem queriesMenu)
         {
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Απλήρωτες Συνδρομές", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Απλήρωτες Συνδρομές (Τρέχον Έτος)", () =>
             {
                 using AppDbContext db = new();
                 int year = DateTime.Now.Year;
@@ -24,7 +24,7 @@ namespace SYLOGOS
                 QueryResultDialog.Show(mainForm, results, "UnpaidMembers", null, year);
             }));
 
-            queriesMenu.DropDownItems.Add(BuildQueryItem("Πληρωμένες Συνδρομές", () =>
+            queriesMenu.DropDownItems.Add(BuildQueryItem("Πληρωμένες Συνδρομές (Τρέχον Έτος)", () =>
             {
                 using AppDbContext db = new();
                 List<Member> results = Queries.GetFullyPaidMembers(db);
