@@ -47,23 +47,24 @@ namespace SYLOGOS.Util
 
         /// <summary>
         /// Returns members who have not paid membership for the specified year.
-        /// A year is considered paid if there is a membership with ReceiptNumber and ReceiptYear == Year.
+        /// Paid = Amount > 0 OR has a valid receipt number (ReceiptNumber > 0).
         /// </summary>
         public static List<Member> GetUnpaidMembers(AppDbContext db, int year)
         {
             return db.Members
                 .Include(m => m.Memberships)
                 .Where(m => !m.Memberships.Any(ms =>
-                    ms.Year == year &&
-                    ms.ReceiptNumber != null &&
-                    ms.ReceiptYear == ms.Year))
+                    ms.Year == year && (
+                        ms.Amount > 0 ||
+                        (ms.ReceiptNumber != null && ms.ReceiptNumber > 0)
+                    )))
                 .OrderBy(m => m.FullName)
                 .ToList();
         }
 
         /// <summary>
-        /// Returns members who have paid for every year from registration up to current year.
-        /// Paid = has receipt and receiptYear matches Year.
+        /// Returns members who are paid for the current calendar year.
+        /// Paid = Amount > 0 OR has a valid receipt number (ReceiptNumber > 0).
         /// </summary>
         public static List<Member> GetFullyPaidMembers(AppDbContext db)
         {
@@ -72,9 +73,10 @@ namespace SYLOGOS.Util
             return db.Members
                 .Include(m => m.Memberships)
                 .Where(m => m.Memberships.Any(ms =>
-                    ms.Year == currentYear &&
-                    ms.ReceiptNumber != null &&
-                    ms.ReceiptYear == currentYear))
+                    ms.Year == currentYear && (
+                        ms.Amount > 0 ||
+                        (ms.ReceiptNumber != null && ms.ReceiptNumber > 0)
+                    )))
                 .OrderBy(m => m.FullName)
                 .AsNoTracking()
                 .ToList();
@@ -82,7 +84,7 @@ namespace SYLOGOS.Util
 
         /// <summary>
         /// Returns members who have at least one valid payment but missed at least one year.
-        /// Valid = receipt present and receiptYear matches.
+        /// Paid year = Amount > 0 OR has a valid receipt number.
         /// </summary>
         public static List<Member> GetPartiallyPaidMembers(AppDbContext db)
         {
@@ -98,7 +100,7 @@ namespace SYLOGOS.Util
                     IEnumerable<int> expectedYears = Enumerable.Range(startYear, currentYear - startYear + 1);
 
                     HashSet<int> paidYears = m.Memberships
-                        .Where(ms => ms.ReceiptNumber != null && ms.ReceiptYear == ms.Year)
+                        .Where(ms => ms.Amount > 0 || (ms.ReceiptNumber != null && ms.ReceiptNumber > 0))
                         .Select(ms => ms.Year)
                         .ToHashSet();
 
@@ -109,13 +111,14 @@ namespace SYLOGOS.Util
         }
 
         /// <summary>
-        /// Returns all membership payments for a specific year.
+        /// Returns paid memberships for a specific year.
+        /// Paid = Amount > 0 OR has a valid receipt number (ReceiptNumber > 0).
         /// </summary>
         public static List<MembershipDisplay> GetMembershipsByYear(AppDbContext db, int year)
         {
             return db.Memberships
                 .Include(ms => ms.Member)
-                .Where(ms => ms.Year == year)
+                .Where(ms => ms.Year == year && (ms.Amount > 0 || (ms.ReceiptNumber != null && ms.ReceiptNumber > 0)))
                 .OrderBy(ms => ms.Member.FullName)
                 .Select(ms => new MembershipDisplay
                 {
@@ -130,12 +133,13 @@ namespace SYLOGOS.Util
 
 
         /// <summary>
-        /// Calculates the total amount received from memberships for a given year.
+        /// Calculates total amount for paid memberships of a given year.
+        /// Paid = Amount > 0 OR has a valid receipt number (ReceiptNumber > 0).
         /// </summary>
         public static decimal GetTotalPaymentsByYear(AppDbContext db, int year)
         {
             return db.Memberships
-                .Where(ms => ms.Year == year)
+                .Where(ms => ms.Year == year && (ms.Amount > 0 || (ms.ReceiptNumber != null && ms.ReceiptNumber > 0)))
                 .Sum(ms => ms.Amount);
         }
 
@@ -291,9 +295,7 @@ namespace SYLOGOS.Util
                 query = query.Where(m =>
                     m.Memberships.Any(ms =>
                         ms.Year == currentYear &&
-                        ms.ReceiptNumber != null &&
-                        ms.ReceiptNumber > 0 &&
-                        ms.ReceiptYear == ms.Year));
+                        (ms.Amount > 0 || (ms.ReceiptNumber != null && ms.ReceiptNumber > 0))));
             }
 
             List<int> ids = query.Select(m => m.Id).ToList();
@@ -335,9 +337,7 @@ namespace SYLOGOS.Util
                 query = query.Where(m =>
                     m.Memberships.Any(ms =>
                         ms.Year == currentYear &&
-                        ms.ReceiptNumber != null &&
-                        ms.ReceiptNumber > 0 &&
-                        ms.ReceiptYear == ms.Year));
+                        (ms.Amount > 0 || (ms.ReceiptNumber != null && ms.ReceiptNumber > 0))));
             }
 
             List<int> ids = query.Select(m => m.Id).ToList();

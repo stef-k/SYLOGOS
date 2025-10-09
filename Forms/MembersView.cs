@@ -1297,12 +1297,12 @@ namespace SYLOGOS.Forms
                     ["ΗΜΕΡΟΜΗΝΙΑ ΕΓΓΡΑΦΗΣ"] = m => m.RegistrationDate?.ToString("dd-MM-yyyy"),
 
                     ["ΤΕΛΕΥΤΑΙΑ ΠΛΗΡΩΜΗ"] = m => m.Memberships
-                        .Where(ms => ms.ReceiptNumber != null && ms.ReceiptYear == ms.Year)
+                        .Where(ms => (ms.Amount > 0) || (ms.ReceiptNumber != null && ms.ReceiptNumber > 0))
                         .OrderByDescending(ms => ms.Year)
                         .FirstOrDefault()?.Year,
 
                     ["ΠΟΣΟ"] = m => m.Memberships
-                        .Where(ms => ms.ReceiptNumber != null && ms.ReceiptYear == ms.Year)
+                        .Where(ms => (ms.Amount > 0) || (ms.ReceiptNumber != null && ms.ReceiptNumber > 0))
                         .OrderByDescending(ms => ms.Year)
                         .FirstOrDefault()?.Amount
                 };
